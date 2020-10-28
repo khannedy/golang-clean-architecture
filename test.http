@@ -1,0 +1,15 @@
+### Get All Products
+
+GET http://localhost:3000/api/products
+Accept: application/json
+
+### Create New Product
+POST http://localhost:3000/api/products
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Mac Book Pro",
+  "price": 40000000,
+  "quantity": 10
+}

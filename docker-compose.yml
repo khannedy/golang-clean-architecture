@@ -1,0 +1,11 @@
+version: '3.5'
+
+services:
+  golang-mongo:
+    container_name: golang-mongo
+    image: mongo:4.2
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
