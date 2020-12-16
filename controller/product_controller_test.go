@@ -13,6 +13,7 @@ import (
 )
 
 func TestProductController_Create(t *testing.T) {
+	productRepository.DeleteAll()
 	createProductRequest := model.CreateProductRequest{
 		Name:     "Test Product",
 		Price:    1000,
@@ -44,6 +45,7 @@ func TestProductController_Create(t *testing.T) {
 }
 
 func TestProductController_List(t *testing.T) {
+	productRepository.DeleteAll()
 	product := entity.Product{
 		Id:       uuid.New().String(),
 		Name:     "Sample Product",

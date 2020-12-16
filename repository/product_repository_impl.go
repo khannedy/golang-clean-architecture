@@ -53,3 +53,11 @@ func (repository *productRepositoryImpl) FindAll() (products []entity.Product) {
 
 	return products
 }
+
+func (repository *productRepositoryImpl) DeleteAll() {
+	ctx, cancel := config.NewMongoContext()
+	defer cancel()
+
+	_, err := repository.Collection.DeleteMany(ctx, bson.M{})
+	exception.PanicIfNeeded(err)
+}
