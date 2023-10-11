@@ -14,9 +14,9 @@ func NewDatabase(viper *viper.Viper) (*gorm.DB, error) {
 	host := viper.Get("database.host").(string)
 	port := int(viper.Get("database.port").(float64))
 	database := viper.Get("database.name").(string)
-	idleConnection := viper.Get("database.pool.idle").(float64)
-	maxConnection := viper.Get("database.pool.max").(float64)
-	maxLifeTimeConnection := viper.Get("database.pool.lifetime").(float64)
+	idleConnection := int(viper.Get("database.pool.idle").(float64))
+	maxConnection := int(viper.Get("database.pool.max").(float64))
+	maxLifeTimeConnection := int(viper.Get("database.pool.lifetime").(float64))
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, port, database)
 
@@ -30,8 +30,8 @@ func NewDatabase(viper *viper.Viper) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	connection.SetMaxIdleConns(int(idleConnection))
-	connection.SetMaxOpenConns(int(maxConnection))
+	connection.SetMaxIdleConns(idleConnection)
+	connection.SetMaxOpenConns(maxConnection)
 	connection.SetConnMaxLifetime(time.Second * time.Duration(maxLifeTimeConnection))
 
 	return db, nil
