@@ -1,8 +1,8 @@
 package user
 
 import (
-	"belajar-golang-fiber/domain/entity"
 	"context"
+	"golang-clean-architecture/domain/entity"
 )
 
 // UserRepository is an interface for user repository contract

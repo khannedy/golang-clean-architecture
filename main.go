@@ -1,13 +1,13 @@
 package main
 
 import (
-	"belajar-golang-fiber/app"
-	"belajar-golang-fiber/domain/entity"
 	"embed"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"golang-clean-architecture/app"
+	"golang-clean-architecture/domain/entity"
 	"gorm.io/gorm"
 	"os"
 )
@@ -21,7 +21,10 @@ func main() {
 		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
 
-	db, err := app.NewDatabase(config)
+	log := app.NewLogger(config)
+	log.Info("Start application")
+
+	db, err := app.NewDatabase(config, log)
 	if err != nil {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
@@ -43,10 +46,16 @@ func main() {
 	//}
 
 	transaction := db.Begin()
-	err = SaveUser(transaction)
+	//err = SaveContact(transaction)
+	//if err != nil {
+	//	fmt.Printf("Error save user: %s \n", err.Error())
+	//}
+
+	users, err := FindUserWithContact(transaction)
 	if err != nil {
-		fmt.Printf("Error save user: %s \n", err.Error())
+		fmt.Printf("Error find user: %s \n", err.Error())
 	}
+	log.Info(users)
 
 	connection, _ := db.DB()
 	connection.Close()
@@ -74,6 +83,47 @@ func RunMigration(db *gorm.DB) error {
 	}
 
 	err = migration.Up()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func FindUserWithContact(db *gorm.DB) ([]entity.User, error) {
+	var users []entity.User
+	err := db.Model(&entity.User{}).Preload("Contacts").Find(&users).Error
+	return users, err
+}
+
+func SaveContact(db *gorm.DB) error {
+	defer db.Rollback()
+
+	err := db.Create(&entity.Contact{
+		ID:        "1",
+		FirstName: "Eko Kurniawan",
+		LastName:  "Khannedy",
+		Email:     "eko@gmail.com",
+		Phone:     "32424234",
+		UserId:    "1",
+	}).Error
+	if err != nil {
+		return err
+	}
+
+	err = db.Create(&entity.Contact{
+		ID:        "2",
+		FirstName: "Eko Kurniawan",
+		LastName:  "Khannedy",
+		Email:     "eko@gmail.com",
+		Phone:     "32424234",
+		UserId:    "1",
+	}).Error
+	if err != nil {
+		return err
+	}
+
+	err = db.Commit().Error
 	if err != nil {
 		return err
 	}

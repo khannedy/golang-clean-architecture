@@ -1,4 +1,4 @@
-module belajar-golang-fiber
+module golang-clean-architecture
 
 go 1.21
 
@@ -8,6 +8,7 @@ require (
 	github.com/spf13/viper v1.17.0
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/gorm v1.25.5
+	github.com/sirupsen/logrus v1.9.3
 )
 
 require (

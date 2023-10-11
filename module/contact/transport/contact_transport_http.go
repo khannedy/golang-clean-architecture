@@ -1,8 +1,8 @@
 package transport
 
 import (
-	"belajar-golang-fiber/module/contact"
 	"github.com/gofiber/fiber/v2"
+	"golang-clean-architecture/module/contact"
 )
 
 type ContactTransportHttp struct {

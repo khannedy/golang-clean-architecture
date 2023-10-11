@@ -1,4 +1,10 @@
 {
+  "app": {
+    "name": "golang-clean-architecture"
+  },
+  "log": {
+    "level": 6
+  },
   "database": {
     "username": "root",
     "password": "",

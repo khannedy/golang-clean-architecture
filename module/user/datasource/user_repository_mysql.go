@@ -1,9 +1,9 @@
 package datasource
 
 import (
-	"belajar-golang-fiber/domain/entity"
-	"belajar-golang-fiber/module/user"
 	"context"
+	"golang-clean-architecture/domain/entity"
+	"golang-clean-architecture/module/user"
 )
 
 type userRepositoryMySQL struct {
