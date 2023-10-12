@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
@@ -9,7 +10,6 @@ import (
 	"golang-clean-architecture/app"
 	"golang-clean-architecture/domain/entity"
 	"gorm.io/gorm"
-	"os"
 )
 
 //go:embed migrations
@@ -29,13 +29,9 @@ func main() {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
 
-	// Run migration if argument is migrate
-	if len(os.Args) > 1 && os.Args[1] == "migrate" {
-		err := RunMigration(db)
-		if err != nil {
-			panic(fmt.Errorf("Error run migration: %w \n", err))
-		}
-		return
+	err = RunMigration(db)
+	if err != nil {
+		panic(fmt.Errorf("Error run migration: %w \n", err))
 	}
 
 	//fiber := app.NewFiber(config)
@@ -84,7 +80,11 @@ func RunMigration(db *gorm.DB) error {
 
 	err = migration.Up()
 	if err != nil {
-		return err
+		if errors.Is(err, migrate.ErrNoChange) {
+			return nil
+		} else {
+			return err
+		}
 	}
 
 	return nil
