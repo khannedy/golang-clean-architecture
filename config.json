@@ -2,6 +2,9 @@
   "app": {
     "name": "golang-clean-architecture"
   },
+  "web": {
+    "port": 3000
+  },
   "log": {
     "level": 6
   },
