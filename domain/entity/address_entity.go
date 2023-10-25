@@ -12,6 +12,7 @@ type Address struct {
 	Country    string    `gorm:"column:country"`
 	CreatedAt  time.Time `gorm:"column:created_at;autoCreateTime:true"`
 	UpdatedAt  time.Time `gorm:"column:updated_at;autoCreateTime:true;autoUpdateTime:true"`
+	Contact    *Contact  `gorm:"foreignKey:contact_id;references:id"`
 }
 
 func (a *Address) TableName() string {

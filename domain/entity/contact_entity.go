@@ -11,6 +11,8 @@ type Contact struct {
 	UserId    string    `gorm:"column:user_id"`
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime:true"`
 	UpdatedAt time.Time `gorm:"column:updated_at;autoCreateTime:true;autoUpdateTime:true"`
+	User      *User     `gorm:"foreignKey:user_id;references:id"`
+	Addresses []Address `gorm:"foreignKey:contact_id;references:id"`
 }
 
 func (c *Contact) TableName() string {
