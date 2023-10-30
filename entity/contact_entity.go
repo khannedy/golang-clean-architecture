@@ -3,7 +3,7 @@ package entity
 import "time"
 
 type Contact struct {
-	ID        string    `gorm:"column:id;primary_key"`
+	ID        string    `gorm:"column:id;primaryKey"`
 	FirstName string    `gorm:"column:first_name"`
 	LastName  string    `gorm:"column:last_name"`
 	Email     string    `gorm:"column:email"`
