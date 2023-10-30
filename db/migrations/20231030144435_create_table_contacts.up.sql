@@ -6,8 +6,8 @@ create table contacts
     email      varchar(100) null,
     phone      varchar(100) null,
     user_id    varchar(100) not null,
-    created_at timestamp    not null default current_timestamp,
-    updated_at timestamp    not null default current_timestamp on update current_timestamp,
+    created_at bigint       not null,
+    updated_at bigint       not null,
     primary key (id),
     foreign key fk_contacts_user_id (user_id) references users (id)
 ) engine = innodb;

@@ -7,8 +7,8 @@ create table addresses
     province    varchar(255),
     postal_code varchar(10),
     country     varchar(100),
-    created_at  timestamp default current_timestamp,
-    updated_at  timestamp default current_timestamp on update current_timestamp,
+    created_at  bigint       not null,
+    updated_at  bigint       not null,
     primary key (id),
     foreign key fk_addresses_contact_id (contact_id) references contacts (id)
 ) engine = innodb;

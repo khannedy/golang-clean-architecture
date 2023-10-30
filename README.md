@@ -25,5 +25,19 @@ All configuration is in `config.json` file.
 ### Run application
 
 ```bash
-go run main.go
+go run cmd/web/main.go
+```
+
+### Create Migration
+
+```shell
+migrate create -ext sql -dir db/migrations create_table_xxx
+```
+
+### Run Migration
+
+```shell
+migrate -database "mysql://root:@tcp(localhost:3306)/golang_clean_architecture?charset=utf8mb4&parseTime=True&loc=Local" -path db/migrations up
+```
+
 ```
