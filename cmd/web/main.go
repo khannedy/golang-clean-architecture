@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/viper"
-	"golang-clean-architecture/cmd/web/route"
 	"golang-clean-architecture/config"
+	"golang-clean-architecture/controller"
 	"golang-clean-architecture/internal"
 )
 
@@ -18,27 +18,19 @@ func main() {
 	log := internal.NewLogger(viperConfig)
 	log.Info("Start application")
 
-	_, err = internal.NewDatabase(viperConfig, log)
+	db, err := internal.NewDatabase(viperConfig, log)
 	if err != nil {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
 
+	validator := internal.NewValidator(viperConfig)
+
 	webPort := viperConfig.GetInt("web.port")
 	app := NewFiber(viperConfig)
 
-	//register routes
-	err = route.User(app)
-	if err != nil {
-		panic(fmt.Errorf("Fatal error route user: %w \n", err))
-	}
-	err = route.Contact(app)
-	if err != nil {
-		panic(fmt.Errorf("Fatal error route contact: %w \n", err))
-	}
-	err = route.Address(app)
-	if err != nil {
-		panic(fmt.Errorf("Fatal error route address: %w \n", err))
-	}
+	//register controller
+	userController := controller.NewUserController(db, validator, log)
+	userController.Routes(app)
 
 	//start server
 	err = app.Listen(fmt.Sprintf(":%d", webPort))

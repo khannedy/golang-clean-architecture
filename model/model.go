@@ -1,8 +1,8 @@
 package model
 
 type WebResponse[T any] struct {
-	Data           T              `json:"data"`
-	PagingResponse PagingResponse `json:"paging"`
+	Data           T               `json:"data,omitempty"`
+	PagingResponse *PagingResponse `json:"paging,omitempty"`
 }
 
 type PagingResponse struct {

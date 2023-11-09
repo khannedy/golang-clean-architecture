@@ -1,0 +1,35 @@
+### Register new user
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "name": "Eko",
+  "id": "eko",
+  "password": "eko"
+}
+
+### Login user
+POST http://localhost:3000/api/users/_login
+Content-Type: application/json
+
+{
+  "id": "eko",
+  "password": "eko"
+}
+
+### Get user profile
+GET http://localhost:3000/api/users/_current
+Authorization: b7788c5b-853e-4de6-bf9d-a27ffb5423d2
+
+### Logout user
+DELETE http://localhost:3000/api/users
+Authorization: b4dd742b-7b11-42a4-b477-d3d5abd40904
+
+### Update user
+PATCH http://localhost:3000/api/users/_current
+Content-Type: application/json
+Authorization: b7788c5b-853e-4de6-bf9d-a27ffb5423d2
+
+{
+  "name": "Eko Kurniawan Khannedy"
+}
