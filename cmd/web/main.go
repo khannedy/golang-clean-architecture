@@ -31,6 +31,10 @@ func main() {
 	//register controller
 	userController := controller.NewUserController(db, validator, log)
 	userController.Routes(app)
+	contactController := controller.NewContactController(db, validator, log)
+	contactController.Routes(app)
+	addressController := controller.NewAddressController(db, validator, log)
+	addressController.Routes(app)
 
 	//start server
 	err = app.Listen(fmt.Sprintf(":%d", webPort))
