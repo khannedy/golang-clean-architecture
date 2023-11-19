@@ -39,5 +39,3 @@ migrate create -ext sql -dir db/migrations create_table_xxx
 ```shell
 migrate -database "mysql://root:@tcp(localhost:3306)/golang_clean_architecture?charset=utf8mb4&parseTime=True&loc=Local" -path db/migrations up
 ```
-
-```
