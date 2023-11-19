@@ -1,7 +1,5 @@
 package entity
 
-import "time"
-
 type Contact struct {
 	ID        string    `gorm:"column:id;primaryKey"`
 	FirstName string    `gorm:"column:first_name"`
@@ -9,8 +7,8 @@ type Contact struct {
 	Email     string    `gorm:"column:email"`
 	Phone     string    `gorm:"column:phone"`
 	UserId    string    `gorm:"column:user_id"`
-	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime:true"`
-	UpdatedAt time.Time `gorm:"column:updated_at;autoCreateTime:true;autoUpdateTime:true"`
+	CreatedAt int64     `gorm:"column:created_at;autoCreateTime:milli"`
+	UpdatedAt int64     `gorm:"column:updated_at;autoCreateTime:milli;autoUpdateTime:milli"`
 	User      User      `gorm:"foreignKey:user_id;references:id"`
 	Addresses []Address `gorm:"foreignKey:contact_id;references:id"`
 }
