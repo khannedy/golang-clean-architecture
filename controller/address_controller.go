@@ -21,14 +21,6 @@ func NewAddressController(db *gorm.DB, validate *validator.Validate, log *logrus
 	}
 }
 
-func (c *AddressController) Routes(app *fiber.App) {
-	app.Get("/api/contacts/:contactId/addresses", c.List)
-	app.Post("/api/contacts/:contactId/addresses", c.Create)
-	app.Put("/api/contacts/:contactId/addresses/:addressId", c.Update)
-	app.Get("/api/contacts/:contactId/addresses/:addressId", c.Get)
-	app.Delete("/api/contacts/:contactId/addresses/addressId", c.Delete)
-}
-
 func (c *AddressController) Create(ctx *fiber.Ctx) error {
 	userContext := ctx.UserContext()
 	tx := c.DB.WithContext(userContext).Begin()

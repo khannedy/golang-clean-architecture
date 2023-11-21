@@ -21,14 +21,6 @@ func NewContactController(db *gorm.DB, validate *validator.Validate, log *logrus
 	}
 }
 
-func (c *ContactController) Routes(app *fiber.App) {
-	app.Get("/api/contacts", c.List)
-	app.Post("/api/contacts", c.Create)
-	app.Put("/api/contacts/:contactId", c.Update)
-	app.Get("/api/contacts/:contactId", c.Get)
-	app.Delete("/api/contacts/:contactId", c.Delete)
-}
-
 func (c *ContactController) Create(ctx *fiber.Ctx) error {
 	return nil
 }

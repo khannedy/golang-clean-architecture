@@ -26,14 +26,6 @@ func NewUserController(db *gorm.DB, validate *validator.Validate, logger *logrus
 	}
 }
 
-func (c *UserController) Routes(app *fiber.App) {
-	app.Post("/api/users", c.Register)
-	app.Post("/api/users/_login", c.Login)
-	app.Delete("/api/users", c.Logout)
-	app.Patch("/api/users/_current", c.Update)
-	app.Get("/api/users/_current", c.Current)
-}
-
 func (c *UserController) Register(ctx *fiber.Ctx) error {
 	request := new(model.RegisterUserRequest)
 	err := ctx.BodyParser(request)
@@ -137,17 +129,10 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 }
 
 func (c *UserController) Current(ctx *fiber.Ctx) error {
-	token := ctx.Get("Authorization", "NOT_FOUND")
-
 	tx := c.DB.Begin(&sql.TxOptions{ReadOnly: true})
 	defer tx.Rollback()
 
-	user := new(entity.User)
-	err := tx.Take(user, "token = ?", token).Error
-	if err != nil {
-		c.Log.Warnf("Failed find user by token : %+v", err)
-		return err
-	}
+	user := ctx.Locals("user").(*entity.User)
 
 	response := model.UserResponse{
 		ID:        user.ID,
@@ -160,20 +145,13 @@ func (c *UserController) Current(ctx *fiber.Ctx) error {
 }
 
 func (c *UserController) Logout(ctx *fiber.Ctx) error {
-	token := ctx.Get("Authorization", "NOT_FOUND")
-
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
-	user := new(entity.User)
-	err := tx.Take(user, "token = ?", token).Error
-	if err != nil {
-		c.Log.Warnf("Failed find user by token : %+v", err)
-		return err
-	}
-
+	user := ctx.Locals("user").(*entity.User)
 	user.Token = ""
-	err = tx.Save(user).Error
+
+	err := tx.Save(user).Error
 	if err != nil {
 		c.Log.Warnf("Failed save user : %+v", err)
 		return err
@@ -185,20 +163,13 @@ func (c *UserController) Logout(ctx *fiber.Ctx) error {
 }
 
 func (c *UserController) Update(ctx *fiber.Ctx) error {
-	token := ctx.Get("Authorization", "NOT_FOUND")
-
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
-	user := new(entity.User)
-	err := tx.Take(user, "token = ?", token).Error
-	if err != nil {
-		c.Log.Warnf("Failed find user by token : %+v", err)
-		return err
-	}
+	user := ctx.Locals("user").(*entity.User)
 
 	request := new(model.UpdateUserRequest)
-	err = ctx.BodyParser(request)
+	err := ctx.BodyParser(request)
 	if err != nil {
 		c.Log.Warnf("Failed to parse request body : %+v", err)
 		return err
