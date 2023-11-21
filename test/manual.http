@@ -19,19 +19,19 @@ Content-Type: application/json
 
 ### Get user profile
 GET http://localhost:3000/api/users/_current
-Authorization: fcdc4824-2bcf-471d-93a4-641a58e4de10
 Accept: application/json
+Authorization: {{token}}
 
 ### Logout user
 DELETE http://localhost:3000/api/users
-Authorization: fcdc4824-2bcf-471d-93a4-641a58e4de10
 Accept: application/json
+Authorization: {{token}}
 
 ### Update user
 PATCH http://localhost:3000/api/users/_current
 Content-Type: application/json
 Accept: application/json
-Authorization: fcdc4824-2bcf-471d-93a4-641a58e4de10
+Authorization: {{token}}
 
 {
   "name": "Joko Morro"
@@ -41,7 +41,7 @@ Authorization: fcdc4824-2bcf-471d-93a4-641a58e4de10
 POST http://localhost:3000/api/contacts
 Content-Type: application/json
 Accept: application/json
-Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+Authorization: {{token}}
 
 {
   "first_name": "Joko",
@@ -51,22 +51,22 @@ Authorization: 38662794-3709-4a69-9ade-15ed2471994c
 }
 
 ### Get detail contact
-GET http://localhost:3000/api/contacts/4e47809f-3fb4-4015-ad18-7232042d4873
+GET http://localhost:3000/api/contacts/{{contactId}}
 Content-Type: application/json
 Accept: application/json
-Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+Authorization: {{token}}
 
 ### Search contacts
-GET http://localhost:3000/api/contacts?size=10&page=3&name=jo&phone=0812&email=joko
+GET http://localhost:3000/api/contacts?size=10&page=1&name=jo&phone=0812&email=joko
 Content-Type: application/json
 Accept: application/json
-Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+Authorization: {{token}}
 
 ### update contact
-PUT http://localhost:3000/api/contacts/4e47809f-3fb4-4015-ad18-7232042d4873
+PUT http://localhost:3000/api/contacts/{{contactId}}
 Content-Type: application/json
 Accept: application/json
-Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+Authorization: {{token}}
 
 {
   "first_name": "Budi",
@@ -76,7 +76,50 @@ Authorization: 38662794-3709-4a69-9ade-15ed2471994c
 }
 
 ### delete contact
-DELETE http://localhost:3000/api/contacts/4e47809f-3fb4-4015-ad18-7232042d4873
+DELETE http://localhost:3000/api/contacts/{{contactId}}
+Accept: application/json
+Authorization: {{token}}
+
+### get all addresses
+GET http://localhost:3000/api/contacts/{{contactId}}/addresses
+Accept: application/json
+Authorization: {{token}}
+
+
+### create new addresses
+POST http://localhost:3000/api/contacts/{{contactId}}/addresses
 Content-Type: application/json
 Accept: application/json
-Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+Authorization: {{token}}
+
+{
+  "street": "Jl. Jalan",
+  "city": "Jakarta",
+  "province": "DKI Jakarta",
+  "country": "Indonesia",
+  "postal_code": "12345"
+}
+
+### get address detail
+GET http://localhost:3000/api/contacts/{{contactId}}/addresses/{{addressId}}
+Accept: application/json
+Authorization: {{token}}
+
+### update address
+PUT http://localhost:3000/api/contacts/{{contactId}}/addresses/{{addressId}}
+Content-Type: application/json
+Accept: application/json
+Authorization: {{token}}
+
+{
+  "street": "Jl. Sudah Jadi",
+  "city": "Jakarta",
+  "province": "DKI Jakarta",
+  "country": "Indonesia",
+  "postal_code": "12345"
+}
+
+### delete address
+DELETE http://localhost:3000/api/contacts/{{contactId}}/addresses/{{addressId}}
+Accept: application/json
+Authorization: {{token}}

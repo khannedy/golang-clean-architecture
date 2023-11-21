@@ -54,7 +54,7 @@ func main() {
 	app.Post("/api/contacts/:contactId/addresses", addressController.Create)
 	app.Put("/api/contacts/:contactId/addresses/:addressId", addressController.Update)
 	app.Get("/api/contacts/:contactId/addresses/:addressId", addressController.Get)
-	app.Delete("/api/contacts/:contactId/addresses/addressId", addressController.Delete)
+	app.Delete("/api/contacts/:contactId/addresses/:addressId", addressController.Delete)
 
 	// error handler
 

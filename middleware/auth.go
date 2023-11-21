@@ -24,3 +24,7 @@ func NewAuth(db *gorm.DB, log *logrus.Logger) fiber.Handler {
 		return ctx.Next()
 	}
 }
+
+func GetUser(ctx *fiber.Ctx) *entity.User {
+	return ctx.Locals("user").(*entity.User)
+}

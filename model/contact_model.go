@@ -21,6 +21,7 @@ type CreateContactRequest struct {
 
 type UpdateContactRequest struct {
 	UserId    string `json:"-" validate:"required"`
+	ID        string `json:"id" validate:"required,max=100,uuid"`
 	FirstName string `json:"first_name" validate:"required,max=100"`
 	LastName  string `json:"last_name" validate:"max=100"`
 	Email     string `json:"email" validate:"max=200,email"`
