@@ -56,18 +56,34 @@ func main() {
 	app.Get("/api/contacts/:contactId/addresses/:addressId", addressController.Get)
 	app.Delete("/api/contacts/:contactId/addresses/addressId", addressController.Delete)
 
+	// error handler
+
 	//start server
 	err = app.Listen(fmt.Sprintf(":%d", webPort))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
 // NewFiber is a function to initialize fiber internal
 func NewFiber(config *viper.Viper) *fiber.App {
 	var app = fiber.New(fiber.Config{
-		AppName: config.Get("app.name").(string),
+		AppName:      config.Get("app.name").(string),
+		ErrorHandler: NewErrorHandler(),
 	})
 
 	return app
+}
+
+func NewErrorHandler() fiber.ErrorHandler {
+	return func(ctx *fiber.Ctx, err error) error {
+		code := fiber.StatusInternalServerError
+		if e, ok := err.(*fiber.Error); ok {
+			code = e.Code
+		}
+
+		return ctx.Status(code).JSON(fiber.Map{
+			"errors": err.Error(),
+		})
+	}
 }

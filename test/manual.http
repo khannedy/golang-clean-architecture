@@ -19,16 +19,19 @@ Content-Type: application/json
 
 ### Get user profile
 GET http://localhost:3000/api/users/_current
-Authorization: f71ec08f-2159-436a-a1ae-01e3d8342f95
+Authorization: fcdc4824-2bcf-471d-93a4-641a58e4de10
+Accept: application/json
 
 ### Logout user
 DELETE http://localhost:3000/api/users
-Authorization: 09ac57a9-2c62-4ab7-8664-618ace32778c
+Authorization: fcdc4824-2bcf-471d-93a4-641a58e4de10
+Accept: application/json
 
 ### Update user
 PATCH http://localhost:3000/api/users/_current
 Content-Type: application/json
-Authorization: f71ec08f-2159-436a-a1ae-01e3d8342f95
+Accept: application/json
+Authorization: fcdc4824-2bcf-471d-93a4-641a58e4de10
 
 {
   "name": "Joko Morro"

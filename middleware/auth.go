@@ -16,7 +16,7 @@ func NewAuth(db *gorm.DB, log *logrus.Logger) fiber.Handler {
 		err := db.Take(user, "token = ?", token).Error
 		if err != nil {
 			log.Warnf("Failed find user by token : %+v", err)
-			return err
+			return fiber.ErrUnauthorized
 		}
 
 		log.Debugf("User : %+v", user)
