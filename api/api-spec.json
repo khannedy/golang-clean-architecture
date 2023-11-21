@@ -417,10 +417,16 @@
                     "paging": {
                       "type": "object",
                       "properties": {
+                        "page": {
+                          "type": "number"
+                        },
                         "size": {
                           "type": "number"
                         },
-                        "total": {
+                        "total_item": {
+                          "type": "number"
+                        },
+                        "total_page": {
                           "type": "number"
                         }
                       }

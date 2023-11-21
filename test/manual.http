@@ -36,3 +36,47 @@ Authorization: fcdc4824-2bcf-471d-93a4-641a58e4de10
 {
   "name": "Joko Morro"
 }
+
+### Create contact
+POST http://localhost:3000/api/contacts
+Content-Type: application/json
+Accept: application/json
+Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+
+{
+  "first_name": "Joko",
+  "last_name": "Morro",
+  "phone": "08123456789",
+  "email": "joko@example.com"
+}
+
+### Get detail contact
+GET http://localhost:3000/api/contacts/4e47809f-3fb4-4015-ad18-7232042d4873
+Content-Type: application/json
+Accept: application/json
+Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+
+### Search contacts
+GET http://localhost:3000/api/contacts?size=10&page=3&name=jo&phone=0812&email=joko
+Content-Type: application/json
+Accept: application/json
+Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+
+### update contact
+PUT http://localhost:3000/api/contacts/4e47809f-3fb4-4015-ad18-7232042d4873
+Content-Type: application/json
+Accept: application/json
+Authorization: 38662794-3709-4a69-9ade-15ed2471994c
+
+{
+  "first_name": "Budi",
+  "last_name": "Nugraha",
+  "phone": "088324324",
+  "email": "budi@example.com"
+}
+
+### delete contact
+DELETE http://localhost:3000/api/contacts/4e47809f-3fb4-4015-ad18-7232042d4873
+Content-Type: application/json
+Accept: application/json
+Authorization: 38662794-3709-4a69-9ade-15ed2471994c

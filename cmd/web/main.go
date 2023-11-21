@@ -68,8 +68,9 @@ func main() {
 // NewFiber is a function to initialize fiber internal
 func NewFiber(config *viper.Viper) *fiber.App {
 	var app = fiber.New(fiber.Config{
-		AppName:      config.Get("app.name").(string),
+		AppName:      config.GetString("app.name"),
 		ErrorHandler: NewErrorHandler(),
+		Prefork:      config.GetBool("web.prefork"),
 	})
 
 	return app
