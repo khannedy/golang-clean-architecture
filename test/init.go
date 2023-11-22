@@ -1,31 +1,44 @@
-package main
+package test
 
 import (
 	"fmt"
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang-clean-architecture/controller"
 	"golang-clean-architecture/internal"
 	"golang-clean-architecture/middleware"
 	"golang-clean-architecture/route"
+	"gorm.io/gorm"
 )
 
-func main() {
-	viperConfig, err := internal.New()
+var app *fiber.App
+
+var db *gorm.DB
+
+var viperConfig *viper.Viper
+
+var log *logrus.Logger
+
+var validate *validator.Validate
+
+func init() {
+	var err error
+
+	viperConfig, err = internal.New()
 	if err != nil {
 		panic(fmt.Errorf("Fatal error viperConfig file: %w \n", err))
 	}
 
-	log := internal.NewLogger(viperConfig)
-	log.Info("Start application")
+	log = internal.NewLogger(viperConfig)
+	validate = internal.NewValidator(viperConfig)
+	app = internal.NewFiber(viperConfig)
 
-	db, err := internal.NewDatabase(viperConfig, log)
+	db, err = internal.NewDatabase(viperConfig, log)
 	if err != nil {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
-
-	validate := internal.NewValidator(viperConfig)
-
-	webPort := viperConfig.GetInt("web.port")
-	app := internal.NewFiber(viperConfig)
 
 	routeConfig := route.RouteConfig{
 		App:               app,
@@ -35,10 +48,4 @@ func main() {
 		AuthMiddleware:    middleware.NewAuth(db, log),
 	}
 	routeConfig.Setup()
-
-	//start server
-	err = app.Listen(fmt.Sprintf(":%d", webPort))
-	if err != nil {
-		log.Fatal(err)
-	}
 }

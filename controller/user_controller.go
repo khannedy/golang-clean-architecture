@@ -31,19 +31,19 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 	err := ctx.BodyParser(request)
 	if err != nil {
 		c.Log.Warnf("Failed to parse request body : %+v", err)
-		return err
+		return fiber.ErrBadRequest
 	}
 
 	err = c.Validate.Struct(request)
 	if err != nil {
 		c.Log.Warnf("Invalid request body : %+v", err)
-		return err
+		return fiber.ErrBadRequest
 	}
 
 	password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.Log.Warnf("Failed to generate bcrype hash : %+v", err)
-		return err
+		return fiber.ErrInternalServerError
 	}
 
 	tx := c.DB.Begin()
@@ -53,7 +53,7 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 	err = tx.Model(&entity.User{}).Where("id = ?", request.ID).Count(&total).Error
 	if err != nil {
 		c.Log.Warnf("Failed create user to database : %+v", err)
-		return err
+		return fiber.ErrInternalServerError
 	}
 
 	if total > 0 {
@@ -70,12 +70,19 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 	err = tx.Create(user).Error
 	if err != nil {
 		c.Log.Warnf("Failed create user to database : %+v", err)
-		return err
+		return fiber.ErrInternalServerError
 	}
 
 	tx.Commit()
 
-	return ctx.JSON(model.WebResponse[model.UserResponse]{Data: model.UserResponse{}})
+	return ctx.JSON(model.WebResponse[model.UserResponse]{
+		Data: model.UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		},
+	})
 }
 
 func (c *UserController) Login(ctx *fiber.Ctx) error {
@@ -83,13 +90,13 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 	err := ctx.BodyParser(request)
 	if err != nil {
 		c.Log.Warnf("Failed to parse request body : %+v", err)
-		return err
+		return fiber.ErrBadRequest
 	}
 
 	err = c.Validate.Struct(request)
 	if err != nil {
 		c.Log.Warnf("Invalid request body  : %+v", err)
-		return err
+		return fiber.ErrBadRequest
 	}
 
 	tx := c.DB.Begin()
@@ -99,7 +106,7 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 	err = tx.Take(user, "id = ?", request.ID).Error
 	if err != nil {
 		c.Log.Warnf("Failed find user by id : %+v", err)
-		return err
+		return fiber.ErrUnauthorized
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
@@ -112,7 +119,7 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 	err = tx.Save(user).Error
 	if err != nil {
 		c.Log.Warnf("Failed save user : %+v", err)
-		return err
+		return fiber.ErrInternalServerError
 	}
 
 	tx.Commit()
@@ -150,7 +157,7 @@ func (c *UserController) Logout(ctx *fiber.Ctx) error {
 	err := tx.Save(user).Error
 	if err != nil {
 		c.Log.Warnf("Failed save user : %+v", err)
-		return err
+		return fiber.ErrInternalServerError
 	}
 
 	tx.Commit()
@@ -168,13 +175,13 @@ func (c *UserController) Update(ctx *fiber.Ctx) error {
 	err := ctx.BodyParser(request)
 	if err != nil {
 		c.Log.Warnf("Failed to parse request body : %+v", err)
-		return err
+		return fiber.ErrBadRequest
 	}
 
 	err = c.Validate.Struct(request)
 	if err != nil {
 		c.Log.Warnf("Invalid request body : %+v", err)
-		return err
+		return fiber.ErrBadRequest
 	}
 
 	if request.Name != "" {
@@ -185,7 +192,7 @@ func (c *UserController) Update(ctx *fiber.Ctx) error {
 		password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 		if err != nil {
 			c.Log.Warnf("Failed to generate bcrype hash : %+v", err)
-			return err
+			return fiber.ErrInternalServerError
 		}
 		user.Password = string(password)
 	}
@@ -193,7 +200,7 @@ func (c *UserController) Update(ctx *fiber.Ctx) error {
 	err = tx.Save(user).Error
 	if err != nil {
 		c.Log.Warnf("Failed save user : %+v", err)
-		return err
+		return fiber.ErrInternalServerError
 	}
 
 	tx.Commit()
