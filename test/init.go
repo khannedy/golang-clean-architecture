@@ -9,7 +9,6 @@ import (
 	"golang-clean-architecture/controller"
 	"golang-clean-architecture/internal"
 	"golang-clean-architecture/middleware"
-	"golang-clean-architecture/route"
 	"gorm.io/gorm"
 )
 
@@ -40,7 +39,7 @@ func init() {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
 
-	routeConfig := route.RouteConfig{
+	routeConfig := internal.RouteConfig{
 		App:               app,
 		UserController:    controller.NewUserController(db, validate, log),
 		ContactController: controller.NewContactController(db, validate, log),

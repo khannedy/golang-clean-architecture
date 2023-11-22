@@ -5,7 +5,6 @@ import (
 	"golang-clean-architecture/controller"
 	"golang-clean-architecture/internal"
 	"golang-clean-architecture/middleware"
-	"golang-clean-architecture/route"
 )
 
 func main() {
@@ -27,7 +26,7 @@ func main() {
 	webPort := viperConfig.GetInt("web.port")
 	app := internal.NewFiber(viperConfig)
 
-	routeConfig := route.RouteConfig{
+	routeConfig := internal.RouteConfig{
 		App:               app,
 		UserController:    controller.NewUserController(db, validate, log),
 		ContactController: controller.NewContactController(db, validate, log),
