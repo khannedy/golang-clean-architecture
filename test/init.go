@@ -25,7 +25,7 @@ var validate *validator.Validate
 func init() {
 	var err error
 
-	viperConfig, err = internal.New()
+	viperConfig, err = internal.NewViper()
 	if err != nil {
 		panic(fmt.Errorf("Fatal error viperConfig file: %w \n", err))
 	}

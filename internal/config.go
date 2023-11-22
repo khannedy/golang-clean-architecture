@@ -2,9 +2,9 @@ package internal
 
 import "github.com/spf13/viper"
 
-// New is a function to load config from config.json
+// NewViper is a function to load config from config.json
 // You can change the implementation, for example load from env file, consul, etcd, etc
-func New() (*viper.Viper, error) {
+func NewViper() (*viper.Viper, error) {
 	config := viper.New()
 
 	config.SetConfigName("config")

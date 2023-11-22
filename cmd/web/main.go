@@ -8,23 +8,23 @@ import (
 )
 
 func main() {
-	viperConfig, err := internal.New()
+	config, err := internal.NewViper()
 	if err != nil {
-		panic(fmt.Errorf("Fatal error viperConfig file: %w \n", err))
+		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
 
-	log := internal.NewLogger(viperConfig)
+	log := internal.NewLogger(config)
 	log.Info("Start application")
 
-	db, err := internal.NewDatabase(viperConfig, log)
+	db, err := internal.NewDatabase(config, log)
 	if err != nil {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
 
-	validate := internal.NewValidator(viperConfig)
+	validate := internal.NewValidator(config)
 
-	webPort := viperConfig.GetInt("web.port")
-	app := internal.NewFiber(viperConfig)
+	webPort := config.GetInt("web.port")
+	app := internal.NewFiber(config)
 
 	routeConfig := internal.RouteConfig{
 		App:               app,
