@@ -1,28 +1,22 @@
 package controller
 
 import (
-	"database/sql"
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang-clean-architecture/entity"
 	"golang-clean-architecture/model"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
+	"golang-clean-architecture/usecase"
 )
 
 type UserController struct {
-	DB       *gorm.DB
-	Validate *validator.Validate
-	Log      *logrus.Logger
+	Log     *logrus.Logger
+	UseCase *usecase.UserUseCase
 }
 
-func NewUserController(db *gorm.DB, validate *validator.Validate, logger *logrus.Logger) *UserController {
+func NewUserController(useCase *usecase.UserUseCase, logger *logrus.Logger) *UserController {
 	return &UserController{
-		DB:       db,
-		Validate: validate,
-		Log:      logger,
+		Log:     logger,
+		UseCase: useCase,
 	}
 }
 
@@ -34,55 +28,13 @@ func (c *UserController) Register(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	err = c.Validate.Struct(request)
+	response, err := c.UseCase.Create(request)
 	if err != nil {
-		c.Log.Warnf("Invalid request body : %+v", err)
-		return fiber.ErrBadRequest
+		c.Log.Warnf("Failed to register user : %+v", err)
+		return err
 	}
 
-	password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.Log.Warnf("Failed to generate bcrype hash : %+v", err)
-		return fiber.ErrInternalServerError
-	}
-
-	tx := c.DB.Begin()
-	defer tx.Rollback()
-
-	var total int64
-	err = tx.Model(&entity.User{}).Where("id = ?", request.ID).Count(&total).Error
-	if err != nil {
-		c.Log.Warnf("Failed create user to database : %+v", err)
-		return fiber.ErrInternalServerError
-	}
-
-	if total > 0 {
-		c.Log.Warnf("User already exists : %+v", err)
-		return fiber.ErrConflict
-	}
-
-	user := &entity.User{
-		ID:       request.ID,
-		Password: string(password),
-		Name:     request.Name,
-	}
-
-	err = tx.Create(user).Error
-	if err != nil {
-		c.Log.Warnf("Failed create user to database : %+v", err)
-		return fiber.ErrInternalServerError
-	}
-
-	tx.Commit()
-
-	return ctx.JSON(model.WebResponse[model.UserResponse]{
-		Data: model.UserResponse{
-			ID:        user.ID,
-			Name:      user.Name,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-		},
-	})
+	return ctx.JSON(model.WebResponse[*model.UserResponse]{Data: response})
 }
 
 func (c *UserController) Login(ctx *fiber.Ctx) error {
@@ -93,124 +45,53 @@ func (c *UserController) Login(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	err = c.Validate.Struct(request)
+	response, err := c.UseCase.Login(request)
 	if err != nil {
-		c.Log.Warnf("Invalid request body  : %+v", err)
-		return fiber.ErrBadRequest
+		c.Log.Warnf("Failed to login user : %+v", err)
+		return err
 	}
 
-	tx := c.DB.Begin()
-	defer tx.Rollback()
-
-	user := new(entity.User)
-	err = tx.Take(user, "id = ?", request.ID).Error
-	if err != nil {
-		c.Log.Warnf("Failed find user by id : %+v", err)
-		return fiber.ErrUnauthorized
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
-	if err != nil {
-		c.Log.Warnf("Failed to compare user password with bcrype hash : %+v", err)
-		return fiber.ErrUnauthorized
-	}
-
-	user.Token = uuid.New().String()
-	err = tx.Save(user).Error
-	if err != nil {
-		c.Log.Warnf("Failed save user : %+v", err)
-		return fiber.ErrInternalServerError
-	}
-
-	tx.Commit()
-
-	response := model.UserResponse{
-		Token: user.Token,
-	}
-
-	return ctx.JSON(model.WebResponse[model.UserResponse]{Data: response})
+	return ctx.JSON(model.WebResponse[*model.UserResponse]{Data: response})
 }
 
 func (c *UserController) Current(ctx *fiber.Ctx) error {
-	tx := c.DB.Begin(&sql.TxOptions{ReadOnly: true})
-	defer tx.Rollback()
-
 	user := ctx.Locals("user").(*entity.User)
 
-	response := model.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	response, err := c.UseCase.Current(user)
+	if err != nil {
+		c.Log.WithError(err).Warnf("Failed to get current user")
+		return err
 	}
 
-	return ctx.JSON(model.WebResponse[model.UserResponse]{Data: response})
+	return ctx.JSON(model.WebResponse[*model.UserResponse]{Data: response})
 }
 
 func (c *UserController) Logout(ctx *fiber.Ctx) error {
-	tx := c.DB.Begin()
-	defer tx.Rollback()
-
 	user := ctx.Locals("user").(*entity.User)
-	user.Token = ""
 
-	err := tx.Save(user).Error
+	response, err := c.UseCase.Logout(user)
 	if err != nil {
-		c.Log.Warnf("Failed save user : %+v", err)
-		return fiber.ErrInternalServerError
+		c.Log.WithError(err).Warnf("Failed to logout user")
+		return err
 	}
 
-	tx.Commit()
-
-	return ctx.JSON(model.WebResponse[bool]{Data: true})
+	return ctx.JSON(model.WebResponse[bool]{Data: response})
 }
 
 func (c *UserController) Update(ctx *fiber.Ctx) error {
-	tx := c.DB.Begin()
-	defer tx.Rollback()
-
 	user := ctx.Locals("user").(*entity.User)
 
 	request := new(model.UpdateUserRequest)
-	err := ctx.BodyParser(request)
-	if err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		c.Log.Warnf("Failed to parse request body : %+v", err)
 		return fiber.ErrBadRequest
 	}
 
-	err = c.Validate.Struct(request)
+	response, err := c.UseCase.Update(user, request)
 	if err != nil {
-		c.Log.Warnf("Invalid request body : %+v", err)
-		return fiber.ErrBadRequest
+		c.Log.WithError(err).Warnf("Failed to update user")
+		return err
 	}
 
-	if request.Name != "" {
-		user.Name = request.Name
-	}
-
-	if request.Password != "" {
-		password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-		if err != nil {
-			c.Log.Warnf("Failed to generate bcrype hash : %+v", err)
-			return fiber.ErrInternalServerError
-		}
-		user.Password = string(password)
-	}
-
-	err = tx.Save(user).Error
-	if err != nil {
-		c.Log.Warnf("Failed save user : %+v", err)
-		return fiber.ErrInternalServerError
-	}
-
-	tx.Commit()
-
-	response := model.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
-
-	return ctx.JSON(model.WebResponse[model.UserResponse]{Data: response})
+	return ctx.JSON(model.WebResponse[*model.UserResponse]{Data: response})
 }

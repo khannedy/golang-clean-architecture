@@ -124,7 +124,7 @@ func (c *ContactController) List(ctx *fiber.Ctx) error {
 		}
 	}
 
-	paging := model.PageMetadata{
+	paging := &model.PageMetadata{
 		Page:      page,
 		Size:      size,
 		TotalItem: total,
