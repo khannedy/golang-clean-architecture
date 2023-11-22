@@ -202,14 +202,6 @@ func (c *ContactController) Update(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	request.UserId = user.ID
-	request.ID = ctx.Params("contactId")
-
-	if err := c.Validate.Struct(request); err != nil {
-		c.Log.WithError(err).Error("error validating request body")
-		return fiber.ErrBadRequest
-	}
-
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -217,6 +209,14 @@ func (c *ContactController) Update(ctx *fiber.Ctx) error {
 	if err := tx.Where("id = ? AND user_id = ?", request.ID, user.ID).Take(contact).Error; err != nil {
 		c.Log.WithError(err).Error("error getting contact")
 		return fiber.ErrNotFound
+	}
+
+	request.UserId = user.ID
+	request.ID = ctx.Params("contactId")
+
+	if err := c.Validate.Struct(request); err != nil {
+		c.Log.WithError(err).Error("error validating request body")
+		return fiber.ErrBadRequest
 	}
 
 	contact.FirstName = request.FirstName
