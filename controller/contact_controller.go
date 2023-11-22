@@ -202,6 +202,9 @@ func (c *ContactController) Update(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
+	request.UserId = user.ID
+	request.ID = ctx.Params("contactId")
+
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -210,9 +213,6 @@ func (c *ContactController) Update(ctx *fiber.Ctx) error {
 		c.Log.WithError(err).Error("error getting contact")
 		return fiber.ErrNotFound
 	}
-
-	request.UserId = user.ID
-	request.ID = ctx.Params("contactId")
 
 	if err := c.Validate.Struct(request); err != nil {
 		c.Log.WithError(err).Error("error validating request body")

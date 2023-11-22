@@ -106,7 +106,6 @@ func TestRegisterDuplicate(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	ClearAll()
 	TestRegister(t) // register success
 
 	requestBody := model.LoginUserRequest{
