@@ -44,7 +44,7 @@ func init() {
 		App:               app,
 		UserController:    controller.NewUserController(usecase.NewUserUseCase(db, log, validate), log),
 		ContactController: controller.NewContactController(usecase.NewContactUseCase(db, log, validate), log),
-		AddressController: controller.NewAddressController(db, validate, log),
+		AddressController: controller.NewAddressController(usecase.NewAddressUseCase(db, log, validate), log),
 		AuthMiddleware:    middleware.NewAuth(db, log),
 	}
 	routeConfig.Setup()
