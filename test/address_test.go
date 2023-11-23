@@ -3,7 +3,7 @@ package test
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	"golang-clean-architecture/model"
+	"golang-clean-architecture/internal/model"
 	"io"
 	"net/http"
 	"net/http/httptest"

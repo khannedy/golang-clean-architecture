@@ -6,8 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"golang-clean-architecture/entity"
-	"golang-clean-architecture/model"
+	"golang-clean-architecture/internal/entity"
+	"golang-clean-architecture/internal/model"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

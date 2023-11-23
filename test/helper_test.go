@@ -3,7 +3,7 @@ package test
 import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"golang-clean-architecture/entity"
+	"golang-clean-architecture/internal/entity"
 	"strconv"
 	"testing"
 )

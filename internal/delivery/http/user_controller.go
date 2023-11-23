@@ -1,11 +1,11 @@
-package controller
+package http
 
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
-	"golang-clean-architecture/entity"
-	"golang-clean-architecture/model"
-	"golang-clean-architecture/usecase"
+	"golang-clean-architecture/internal/entity"
+	"golang-clean-architecture/internal/model"
+	"golang-clean-architecture/internal/usecase"
 )
 
 type UserController struct {

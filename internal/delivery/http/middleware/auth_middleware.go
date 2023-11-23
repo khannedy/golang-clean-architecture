@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
-	"golang-clean-architecture/entity"
+	"golang-clean-architecture/internal/entity"
 	"gorm.io/gorm"
 )
 

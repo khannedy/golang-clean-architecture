@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"golang-clean-architecture/controller"
 	"golang-clean-architecture/internal"
-	"golang-clean-architecture/middleware"
-	"golang-clean-architecture/usecase"
+	"golang-clean-architecture/internal/delivery/http"
+	"golang-clean-architecture/internal/delivery/http/middleware"
+	"golang-clean-architecture/internal/usecase"
 )
 
 func main() {
@@ -29,9 +29,9 @@ func main() {
 
 	routeConfig := internal.RouteConfig{
 		App:               app,
-		UserController:    controller.NewUserController(usecase.NewUserUseCase(db, log, validate), log),
-		ContactController: controller.NewContactController(usecase.NewContactUseCase(db, log, validate), log),
-		AddressController: controller.NewAddressController(usecase.NewAddressUseCase(db, log, validate), log),
+		UserController:    http.NewUserController(usecase.NewUserUseCase(db, log, validate), log),
+		ContactController: http.NewContactController(usecase.NewContactUseCase(db, log, validate), log),
+		AddressController: http.NewAddressController(usecase.NewAddressUseCase(db, log, validate), log),
 		AuthMiddleware:    middleware.NewAuth(db, log),
 	}
 	routeConfig.Setup()

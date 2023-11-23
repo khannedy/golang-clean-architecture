@@ -2,14 +2,14 @@ package internal
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"golang-clean-architecture/controller"
+	"golang-clean-architecture/internal/delivery/http"
 )
 
 type RouteConfig struct {
 	App               *fiber.App
-	UserController    *controller.UserController
-	ContactController *controller.ContactController
-	AddressController *controller.AddressController
+	UserController    *http.UserController
+	ContactController *http.ContactController
+	AddressController *http.AddressController
 	AuthMiddleware    fiber.Handler
 }
 
