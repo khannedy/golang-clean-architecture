@@ -83,7 +83,10 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
