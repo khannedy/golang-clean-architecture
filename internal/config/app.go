@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,7 @@ type BootstrapConfig struct {
 	Log      *logrus.Logger
 	Validate *validator.Validate
 	Config   *viper.Viper
+	Producer *kafka.Producer
 }
 
 func Bootstrap(config *BootstrapConfig) {

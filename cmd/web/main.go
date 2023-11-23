@@ -21,8 +21,12 @@ func main() {
 
 	validate := config.NewValidator(viperConfig)
 
-	webPort := viperConfig.GetInt("web.port")
 	app := config.NewFiber(viperConfig)
+
+	producer, err := config.NewKafkaProducer(viperConfig)
+	if err != nil {
+		panic(fmt.Errorf("Fatal error kafka producer: %w \n", err))
+	}
 
 	config.Bootstrap(&config.BootstrapConfig{
 		DB:       db,
@@ -30,9 +34,11 @@ func main() {
 		Log:      log,
 		Validate: validate,
 		Config:   viperConfig,
+		Producer: producer,
 	})
 
 	//start server
+	webPort := viperConfig.GetInt("web.port")
 	err = app.Listen(fmt.Sprintf(":%d", webPort))
 	if err != nil {
 		log.Fatal(err)
