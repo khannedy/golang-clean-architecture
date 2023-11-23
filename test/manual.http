@@ -1,0 +1,125 @@
+### Register new user
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "name": "Joko",
+  "id": "joko",
+  "password": "joko"
+}
+
+### Login user
+POST http://localhost:3000/api/users/_login
+Content-Type: application/json
+
+{
+  "id": "joko",
+  "password": "joko"
+}
+
+### Get user profile
+GET http://localhost:3000/api/users/_current
+Accept: application/json
+Authorization: {{token}}
+
+### Logout user
+DELETE http://localhost:3000/api/users
+Accept: application/json
+Authorization: {{token}}
+
+### Update user
+PATCH http://localhost:3000/api/users/_current
+Content-Type: application/json
+Accept: application/json
+Authorization: {{token}}
+
+{
+  "name": "Joko Morro"
+}
+
+### Create contact
+POST http://localhost:3000/api/contacts
+Content-Type: application/json
+Accept: application/json
+Authorization: {{token}}
+
+{
+  "first_name": "Joko",
+  "last_name": "Morro",
+  "phone": "08123456789",
+  "email": "joko@example.com"
+}
+
+### Get detail contact
+GET http://localhost:3000/api/contacts/{{contactId}}
+Content-Type: application/json
+Accept: application/json
+Authorization: {{token}}
+
+### Search contacts
+GET http://localhost:3000/api/contacts?size=10&page=1&name=jo&phone=0812&email=joko
+Content-Type: application/json
+Accept: application/json
+Authorization: {{token}}
+
+### update contact
+PUT http://localhost:3000/api/contacts/{{contactId}}
+Content-Type: application/json
+Accept: application/json
+Authorization: {{token}}
+
+{
+  "first_name": "Budi",
+  "last_name": "Nugraha",
+  "phone": "088324324",
+  "email": "budi@example.com"
+}
+
+### delete contact
+DELETE http://localhost:3000/api/contacts/{{contactId}}
+Accept: application/json
+Authorization: {{token}}
+
+### get all addresses
+GET http://localhost:3000/api/contacts/{{contactId}}/addresses
+Accept: application/json
+Authorization: {{token}}
+
+
+### create new addresses
+POST http://localhost:3000/api/contacts/{{contactId}}/addresses
+Content-Type: application/json
+Accept: application/json
+Authorization: {{token}}
+
+{
+  "street": "Jl. Jalan",
+  "city": "Jakarta",
+  "province": "DKI Jakarta",
+  "country": "Indonesia",
+  "postal_code": "12345"
+}
+
+### get address detail
+GET http://localhost:3000/api/contacts/{{contactId}}/addresses/{{addressId}}
+Accept: application/json
+Authorization: {{token}}
+
+### update address
+PUT http://localhost:3000/api/contacts/{{contactId}}/addresses/{{addressId}}
+Content-Type: application/json
+Accept: application/json
+Authorization: {{token}}
+
+{
+  "street": "Jl. Sudah Jadi",
+  "city": "Jakarta",
+  "province": "DKI Jakarta",
+  "country": "Indonesia",
+  "postal_code": "12345"
+}
+
+### delete address
+DELETE http://localhost:3000/api/contacts/{{contactId}}/addresses/{{addressId}}
+Accept: application/json
+Authorization: {{token}}
