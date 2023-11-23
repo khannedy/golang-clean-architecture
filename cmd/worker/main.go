@@ -61,4 +61,7 @@ func main() {
 	//	./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic users --group golang-clean-architecture
 	//$ ./bin/kafka-consumer-groups.sh --list --bootstrap-server localhost:9092
 	// ./bin/kafka-consumer-groups.sh --describe --group golang-clean-architecture --members --bootstrap-server localhost:9092
+	// ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic users --alter --partitions 3
+	// ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic contacts --alter --partitions 3
+	// ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic addresses --alter --partitions 3
 }
