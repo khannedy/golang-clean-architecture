@@ -33,7 +33,7 @@ func (c *AddressController) Create(ctx *fiber.Ctx) error {
 	request.UserId = user.ID
 	request.ContactId = ctx.Params("contactId")
 
-	response, err := c.UseCase.Create(ctx.UserContext(), user, request)
+	response, err := c.UseCase.Create(ctx.UserContext(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("failed to create address")
 		return err
@@ -46,7 +46,12 @@ func (c *AddressController) List(ctx *fiber.Ctx) error {
 	user := middleware.GetUser(ctx)
 	contactId := ctx.Params("contactId")
 
-	responses, err := c.UseCase.List(ctx.UserContext(), user, contactId)
+	request := &model.ListAddressRequest{
+		UserId:    user.ID,
+		ContactId: contactId,
+	}
+
+	responses, err := c.UseCase.List(ctx.UserContext(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("failed to list addresses")
 		return err
@@ -60,7 +65,13 @@ func (c *AddressController) Get(ctx *fiber.Ctx) error {
 	contactId := ctx.Params("contactId")
 	addressId := ctx.Params("addressId")
 
-	response, err := c.UseCase.Get(ctx.UserContext(), user, contactId, addressId)
+	request := &model.GetAddressRequest{
+		UserId:    user.ID,
+		ContactId: contactId,
+		ID:        addressId,
+	}
+
+	response, err := c.UseCase.Get(ctx.UserContext(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("failed to get address")
 		return err
@@ -82,7 +93,7 @@ func (c *AddressController) Update(ctx *fiber.Ctx) error {
 	request.ContactId = ctx.Params("contactId")
 	request.ID = ctx.Params("addressId")
 
-	response, err := c.UseCase.Update(ctx.UserContext(), user, request)
+	response, err := c.UseCase.Update(ctx.UserContext(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("failed to update address")
 		return err
@@ -96,7 +107,13 @@ func (c *AddressController) Delete(ctx *fiber.Ctx) error {
 	contactId := ctx.Params("contactId")
 	addressId := ctx.Params("addressId")
 
-	if err := c.UseCase.Delete(ctx.UserContext(), user, contactId, addressId); err != nil {
+	request := &model.DeleteAddressRequest{
+		UserId:    user.ID,
+		ContactId: contactId,
+		ID:        addressId,
+	}
+
+	if err := c.UseCase.Delete(ctx.UserContext(), request); err != nil {
 		c.Log.WithError(err).Error("failed to delete address")
 		return err
 	}

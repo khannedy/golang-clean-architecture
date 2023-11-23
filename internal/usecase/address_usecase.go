@@ -8,25 +8,30 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang-clean-architecture/internal/entity"
 	"golang-clean-architecture/internal/model"
+	"golang-clean-architecture/internal/repository"
 	"gorm.io/gorm"
 )
 
 type AddressUseCase struct {
-	DB       *gorm.DB
-	Log      *logrus.Logger
-	Validate *validator.Validate
+	DB                *gorm.DB
+	Log               *logrus.Logger
+	Validate          *validator.Validate
+	AddressRepository *repository.AddressRepository
+	ContactRepository *repository.ContactRepository
 }
 
-func NewAddressUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate) *AddressUseCase {
+func NewAddressUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate, contactRepository *repository.ContactRepository, addressRepository *repository.AddressRepository) *AddressUseCase {
 	return &AddressUseCase{
-		DB:       db,
-		Log:      logger,
-		Validate: validate,
+		DB:                db,
+		Log:               logger,
+		Validate:          validate,
+		ContactRepository: contactRepository,
+		AddressRepository: addressRepository,
 	}
 }
 
-func (c *AddressUseCase) Create(ctx context.Context, user *entity.User, request *model.CreateAddressRequest) (*model.AddressResponse, error) {
-	tx := c.DB.Begin()
+func (c *AddressUseCase) Create(ctx context.Context, request *model.CreateAddressRequest) (*model.AddressResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
 	if err := c.Validate.Struct(request); err != nil {
@@ -35,7 +40,7 @@ func (c *AddressUseCase) Create(ctx context.Context, user *entity.User, request 
 	}
 
 	contact := new(entity.Contact)
-	if err := tx.Where("id = ? AND user_id = ?", request.ContactId, user.ID).First(contact).Error; err != nil {
+	if err := c.ContactRepository.FindByIdAndUserId(tx, contact, request.ContactId, request.UserId); err != nil {
 		c.Log.WithError(err).Error("failed to find contact")
 		return nil, fiber.ErrNotFound
 	}
@@ -50,7 +55,7 @@ func (c *AddressUseCase) Create(ctx context.Context, user *entity.User, request 
 		Country:    request.Country,
 	}
 
-	if err := tx.Create(address).Error; err != nil {
+	if err := c.AddressRepository.Create(tx, address); err != nil {
 		c.Log.WithError(err).Error("failed to create address")
 		return nil, fiber.ErrInternalServerError
 	}
@@ -73,8 +78,8 @@ func (c *AddressUseCase) Create(ctx context.Context, user *entity.User, request 
 	return response, nil
 }
 
-func (c *AddressUseCase) Update(ctx context.Context, user *entity.User, request *model.UpdateAddressRequest) (*model.AddressResponse, error) {
-	tx := c.DB.Begin()
+func (c *AddressUseCase) Update(ctx context.Context, request *model.UpdateAddressRequest) (*model.AddressResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
 	if err := c.Validate.Struct(request); err != nil {
@@ -83,13 +88,13 @@ func (c *AddressUseCase) Update(ctx context.Context, user *entity.User, request 
 	}
 
 	contact := new(entity.Contact)
-	if err := tx.Where("id = ? AND user_id = ?", request.ContactId, user.ID).First(contact).Error; err != nil {
+	if err := c.ContactRepository.FindByIdAndUserId(tx, contact, request.ContactId, request.UserId); err != nil {
 		c.Log.WithError(err).Error("failed to find contact")
 		return nil, fiber.ErrNotFound
 	}
 
 	address := new(entity.Address)
-	if err := tx.Where("id = ? AND contact_id = ?", request.ID, contact.ID).First(address).Error; err != nil {
+	if err := c.AddressRepository.FindByIdAndContactId(tx, address, request.ID, contact.ID); err != nil {
 		c.Log.WithError(err).Error("failed to find address")
 		return nil, fiber.ErrNotFound
 	}
@@ -100,7 +105,7 @@ func (c *AddressUseCase) Update(ctx context.Context, user *entity.User, request 
 	address.PostalCode = request.PostalCode
 	address.Country = request.Country
 
-	if err := tx.Save(address).Error; err != nil {
+	if err := c.AddressRepository.Update(tx, address); err != nil {
 		c.Log.WithError(err).Error("failed to update address")
 		return nil, fiber.ErrInternalServerError
 	}
@@ -123,18 +128,18 @@ func (c *AddressUseCase) Update(ctx context.Context, user *entity.User, request 
 	return response, nil
 }
 
-func (c *AddressUseCase) Get(ctx context.Context, user *entity.User, contactId string, addressId string) (*model.AddressResponse, error) {
-	tx := c.DB.Begin()
+func (c *AddressUseCase) Get(ctx context.Context, request *model.GetAddressRequest) (*model.AddressResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
 	contact := new(entity.Contact)
-	if err := tx.Where("id = ? AND user_id = ?", contactId, user.ID).First(contact).Error; err != nil {
+	if err := c.ContactRepository.FindByIdAndUserId(tx, contact, request.ContactId, request.UserId); err != nil {
 		c.Log.WithError(err).Error("failed to find contact")
 		return nil, fiber.ErrNotFound
 	}
 
 	address := new(entity.Address)
-	if err := tx.Where("id = ? AND contact_id = ?", addressId, contactId).First(address).Error; err != nil {
+	if err := c.AddressRepository.FindByIdAndContactId(tx, address, request.ID, request.ContactId); err != nil {
 		c.Log.WithError(err).Error("failed to find address")
 		return nil, fiber.ErrNotFound
 	}
@@ -157,23 +162,23 @@ func (c *AddressUseCase) Get(ctx context.Context, user *entity.User, contactId s
 	return response, nil
 }
 
-func (c *AddressUseCase) Delete(ctx context.Context, user *entity.User, contactId string, addressId string) error {
-	tx := c.DB.Begin()
+func (c *AddressUseCase) Delete(ctx context.Context, request *model.DeleteAddressRequest) error {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
 	contact := new(entity.Contact)
-	if err := tx.Where("id = ? AND user_id = ?", contactId, user.ID).First(contact).Error; err != nil {
+	if err := c.ContactRepository.FindByIdAndUserId(tx, contact, request.ContactId, request.UserId); err != nil {
 		c.Log.WithError(err).Error("failed to find contact")
 		return fiber.ErrNotFound
 	}
 
 	address := new(entity.Address)
-	if err := tx.Where("id = ? AND contact_id = ?", addressId, contactId).First(address).Error; err != nil {
+	if err := c.AddressRepository.FindByIdAndContactId(tx, address, request.ID, request.ContactId); err != nil {
 		c.Log.WithError(err).Error("failed to find address")
 		return fiber.ErrNotFound
 	}
 
-	if err := tx.Delete(address).Error; err != nil {
+	if err := c.AddressRepository.Delete(tx, address); err != nil {
 		c.Log.WithError(err).Error("failed to delete address")
 		return fiber.ErrInternalServerError
 	}
@@ -186,18 +191,18 @@ func (c *AddressUseCase) Delete(ctx context.Context, user *entity.User, contactI
 	return nil
 }
 
-func (c *AddressUseCase) List(ctx context.Context, user *entity.User, contactId string) ([]model.AddressResponse, error) {
-	tx := c.DB.Begin()
+func (c *AddressUseCase) List(ctx context.Context, request *model.ListAddressRequest) ([]model.AddressResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
 	contact := new(entity.Contact)
-	if err := tx.Where("id = ? AND user_id = ?", contactId, user.ID).First(contact).Error; err != nil {
+	if err := c.ContactRepository.FindByIdAndUserId(tx, contact, request.ContactId, request.UserId); err != nil {
 		c.Log.WithError(err).Error("failed to find contact")
 		return nil, fiber.ErrNotFound
 	}
 
-	var addresses []entity.Address
-	if err := tx.Where("contact_id = ?", contact.ID).Find(&addresses).Error; err != nil {
+	addresses, err := c.AddressRepository.FindAllByContactId(tx, contact.ID)
+	if err != nil {
 		c.Log.WithError(err).Error("failed to find addresses")
 		return nil, fiber.ErrInternalServerError
 	}
