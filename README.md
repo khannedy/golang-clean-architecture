@@ -67,3 +67,9 @@ go test -v ./test/
 ```bash
 go run cmd/web/main.go
 ```
+
+### Run worker
+
+```bash
+go run cmd/worker/main.go
+```
