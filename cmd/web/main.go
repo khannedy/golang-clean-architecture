@@ -2,32 +2,33 @@ package main
 
 import (
 	"fmt"
-	"golang-clean-architecture/internal"
+	"golang-clean-architecture/internal/config"
 	"golang-clean-architecture/internal/delivery/http"
 	"golang-clean-architecture/internal/delivery/http/middleware"
+	"golang-clean-architecture/internal/delivery/http/route"
 	"golang-clean-architecture/internal/usecase"
 )
 
 func main() {
-	config, err := internal.NewViper()
+	_config, err := config.NewViper()
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
 
-	log := internal.NewLogger(config)
+	log := config.NewLogger(_config)
 	log.Info("Start application")
 
-	db, err := internal.NewDatabase(config, log)
+	db, err := config.NewDatabase(_config, log)
 	if err != nil {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
 
-	validate := internal.NewValidator(config)
+	validate := config.NewValidator(_config)
 
-	webPort := config.GetInt("web.port")
-	app := internal.NewFiber(config)
+	webPort := _config.GetInt("web.port")
+	app := config.NewFiber(_config)
 
-	routeConfig := internal.RouteConfig{
+	routeConfig := route.RouteConfig{
 		App:               app,
 		UserController:    http.NewUserController(usecase.NewUserUseCase(db, log, validate), log),
 		ContactController: http.NewContactController(usecase.NewContactUseCase(db, log, validate), log),
