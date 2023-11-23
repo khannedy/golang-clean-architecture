@@ -2,10 +2,10 @@ package repository
 
 import (
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
+	"golang-clean-architecture/internal/entity"
 )
 
 type ContactRepository struct {
-	DB  *gorm.DB
+	Repository[entity.Contact]
 	Log *logrus.Logger
 }

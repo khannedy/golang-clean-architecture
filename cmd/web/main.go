@@ -3,39 +3,34 @@ package main
 import (
 	"fmt"
 	"golang-clean-architecture/internal/config"
-	"golang-clean-architecture/internal/delivery/http"
-	"golang-clean-architecture/internal/delivery/http/middleware"
-	"golang-clean-architecture/internal/delivery/http/route"
-	"golang-clean-architecture/internal/usecase"
 )
 
 func main() {
-	_config, err := config.NewViper()
+	viperConfig, err := config.NewViper()
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
 
-	log := config.NewLogger(_config)
+	log := config.NewLogger(viperConfig)
 	log.Info("Start application")
 
-	db, err := config.NewDatabase(_config, log)
+	db, err := config.NewDatabase(viperConfig, log)
 	if err != nil {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
 
-	validate := config.NewValidator(_config)
+	validate := config.NewValidator(viperConfig)
 
-	webPort := _config.GetInt("web.port")
-	app := config.NewFiber(_config)
+	webPort := viperConfig.GetInt("web.port")
+	app := config.NewFiber(viperConfig)
 
-	routeConfig := route.RouteConfig{
-		App:               app,
-		UserController:    http.NewUserController(usecase.NewUserUseCase(db, log, validate), log),
-		ContactController: http.NewContactController(usecase.NewContactUseCase(db, log, validate), log),
-		AddressController: http.NewAddressController(usecase.NewAddressUseCase(db, log, validate), log),
-		AuthMiddleware:    middleware.NewAuth(db, log),
-	}
-	routeConfig.Setup()
+	config.Bootstrap(&config.BootstrapConfig{
+		DB:       db,
+		App:      app,
+		Log:      log,
+		Validate: validate,
+		Config:   viperConfig,
+	})
 
 	//start server
 	err = app.Listen(fmt.Sprintf(":%d", webPort))

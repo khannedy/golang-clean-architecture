@@ -7,10 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang-clean-architecture/internal/config"
-	"golang-clean-architecture/internal/delivery/http"
-	"golang-clean-architecture/internal/delivery/http/middleware"
-	"golang-clean-architecture/internal/delivery/http/route"
-	"golang-clean-architecture/internal/usecase"
 	"gorm.io/gorm"
 )
 
@@ -41,12 +37,11 @@ func init() {
 		panic(fmt.Errorf("Fatal error database: %w \n", err))
 	}
 
-	routeConfig := route.RouteConfig{
-		App:               app,
-		UserController:    http.NewUserController(usecase.NewUserUseCase(db, log, validate), log),
-		ContactController: http.NewContactController(usecase.NewContactUseCase(db, log, validate), log),
-		AddressController: http.NewAddressController(usecase.NewAddressUseCase(db, log, validate), log),
-		AuthMiddleware:    middleware.NewAuth(db, log),
-	}
-	routeConfig.Setup()
+	config.Bootstrap(&config.BootstrapConfig{
+		DB:       db,
+		App:      app,
+		Log:      log,
+		Validate: validate,
+		Config:   viperConfig,
+	})
 }

@@ -8,21 +8,24 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang-clean-architecture/internal/entity"
 	"golang-clean-architecture/internal/model"
+	"golang-clean-architecture/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type UserUseCase struct {
-	DB       *gorm.DB
-	Log      *logrus.Logger
-	Validate *validator.Validate
+	DB             *gorm.DB
+	Log            *logrus.Logger
+	Validate       *validator.Validate
+	UserRepository *repository.UserRepository
 }
 
-func NewUserUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate) *UserUseCase {
+func NewUserUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate, userRepository *repository.UserRepository) *UserUseCase {
 	return &UserUseCase{
-		DB:       db,
-		Log:      logger,
-		Validate: validate,
+		DB:             db,
+		Log:            logger,
+		Validate:       validate,
+		UserRepository: userRepository,
 	}
 }
 
@@ -42,10 +45,9 @@ func (c *UserUseCase) Create(ctx context.Context, request *model.RegisterUserReq
 		return nil, fiber.ErrInternalServerError
 	}
 
-	var total int64
-	err = tx.Model(&entity.User{}).Where("id = ?", request.ID).Count(&total).Error
+	total, err := c.UserRepository.CountById(tx, request.ID)
 	if err != nil {
-		c.Log.Warnf("Failed create user to database : %+v", err)
+		c.Log.Warnf("Failed count user from database : %+v", err)
 		return nil, fiber.ErrInternalServerError
 	}
 
@@ -60,7 +62,7 @@ func (c *UserUseCase) Create(ctx context.Context, request *model.RegisterUserReq
 		Name:     request.Name,
 	}
 
-	err = tx.Create(user).Error
+	err = c.UserRepository.Create(tx, user)
 	if err != nil {
 		c.Log.Warnf("Failed create user to database : %+v", err)
 		return nil, fiber.ErrInternalServerError
@@ -87,7 +89,7 @@ func (c *UserUseCase) Login(ctx context.Context, request *model.LoginUserRequest
 	}
 
 	user := new(entity.User)
-	if err := tx.Take(user, "id = ?", request.ID).Error; err != nil {
+	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
 		c.Log.Warnf("Failed find user by id : %+v", err)
 		return nil, fiber.ErrUnauthorized
 	}
@@ -98,7 +100,7 @@ func (c *UserUseCase) Login(ctx context.Context, request *model.LoginUserRequest
 	}
 
 	user.Token = uuid.New().String()
-	if err := tx.Save(user).Error; err != nil {
+	if err := c.UserRepository.Update(tx, user); err != nil {
 		c.Log.Warnf("Failed save user : %+v", err)
 		return nil, fiber.ErrInternalServerError
 	}
@@ -122,7 +124,7 @@ func (c *UserUseCase) Current(ctx context.Context, request *model.GetUserRequest
 	}
 
 	user := new(entity.User)
-	if err := tx.Take(user, "id = ?", request.ID).Error; err != nil {
+	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
 		c.Log.Warnf("Failed find user by id : %+v", err)
 		return nil, fiber.ErrNotFound
 	}
@@ -152,14 +154,14 @@ func (c *UserUseCase) Logout(ctx context.Context, request *model.LogoutUserReque
 	}
 
 	user := new(entity.User)
-	if err := tx.Take(user, "id = ?", request.ID).Error; err != nil {
+	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
 		c.Log.Warnf("Failed find user by id : %+v", err)
 		return false, fiber.ErrNotFound
 	}
 
 	user.Token = ""
 
-	if err := tx.Save(user).Error; err != nil {
+	if err := c.UserRepository.Update(tx, user); err != nil {
 		c.Log.Warnf("Failed save user : %+v", err)
 		return false, fiber.ErrInternalServerError
 	}
@@ -182,7 +184,7 @@ func (c *UserUseCase) Update(ctx context.Context, request *model.UpdateUserReque
 	}
 
 	user := new(entity.User)
-	if err := tx.Take(user, "id = ?", request.ID).Error; err != nil {
+	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
 		c.Log.Warnf("Failed find user by id : %+v", err)
 		return nil, fiber.ErrNotFound
 	}
@@ -200,7 +202,7 @@ func (c *UserUseCase) Update(ctx context.Context, request *model.UpdateUserReque
 		user.Password = string(password)
 	}
 
-	if err := tx.Save(user).Error; err != nil {
+	if err := c.UserRepository.Update(tx, user); err != nil {
 		c.Log.Warnf("Failed save user : %+v", err)
 		return nil, fiber.ErrInternalServerError
 	}
