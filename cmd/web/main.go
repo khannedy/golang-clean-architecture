@@ -6,22 +6,10 @@ import (
 )
 
 func main() {
-	viperConfig, err := config.NewViper()
-	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
-	}
-
+	viperConfig := config.NewViper()
 	log := config.NewLogger(viperConfig)
-	log.Info("Start application")
-
-	db, err := config.NewDatabase(viperConfig, log)
-	if err != nil {
-		panic(fmt.Errorf("Fatal error database: %w \n", err))
-	}
-
+	db := config.NewDatabase(viperConfig, log)
 	validate := config.NewValidator(viperConfig)
-
-	webPort := viperConfig.GetInt("web.port")
 	app := config.NewFiber(viperConfig)
 
 	config.Bootstrap(&config.BootstrapConfig{
@@ -32,9 +20,9 @@ func main() {
 		Config:   viperConfig,
 	})
 
-	//start server
-	err = app.Listen(fmt.Sprintf(":%d", webPort))
+	webPort := viperConfig.GetInt("web.port")
+	err := app.Listen(fmt.Sprintf(":%d", webPort))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to start server: %v", err)
 	}
 }

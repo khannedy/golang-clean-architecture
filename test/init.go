@@ -1,7 +1,6 @@
 package test
 
 import (
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
@@ -21,21 +20,11 @@ var log *logrus.Logger
 var validate *validator.Validate
 
 func init() {
-	var err error
-
-	viperConfig, err = config.NewViper()
-	if err != nil {
-		panic(fmt.Errorf("Fatal error viperConfig file: %w \n", err))
-	}
-
+	viperConfig = config.NewViper()
 	log = config.NewLogger(viperConfig)
 	validate = config.NewValidator(viperConfig)
 	app = config.NewFiber(viperConfig)
-
-	db, err = config.NewDatabase(viperConfig, log)
-	if err != nil {
-		panic(fmt.Errorf("Fatal error database: %w \n", err))
-	}
+	db = config.NewDatabase(viperConfig, log)
 
 	config.Bootstrap(&config.BootstrapConfig{
 		DB:       db,
