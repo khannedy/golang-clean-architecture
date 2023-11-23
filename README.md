@@ -22,13 +22,13 @@ This is golang clean architecture template.
 
 ## Tech Stack / Framework
 
-- GoFiber (HTTP Framework)
-- GORM (ORM)
-- MySQL (Database)
-- Viper (Configuration)
-- Golang Migrate (Database Migration)
-- Go Playground Validator (Validation)
-- Logrus (Logger)
+- GoFiber (HTTP Framework) : https://github.com/gofiber/fiber
+- GORM (ORM) : https://github.com/go-gorm/gorm
+- MySQL (Database) : https://github.com/mysql/mysql-server
+- Viper (Configuration) : https://github.com/spf13/viper
+- Golang Migrate (Database Migration) : https://github.com/golang-migrate/migrate
+- Go Playground Validator (Validation) : https://github.com/go-playground/validator
+- Logrus (Logger) : https://github.com/sirupsen/logrus
 
 ## Configuration
 
