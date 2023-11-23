@@ -52,7 +52,7 @@ func (c *ContactController) List(ctx *fiber.Ctx) error {
 		Size:   ctx.QueryInt("size", 10),
 	}
 
-	responses, total, err := c.UseCase.Search(ctx.UserContext(), user, request)
+	responses, total, err := c.UseCase.Search(ctx.UserContext(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("error searching contact")
 		return err
@@ -113,7 +113,12 @@ func (c *ContactController) Delete(ctx *fiber.Ctx) error {
 	user := ctx.Locals("user").(*entity.User)
 	contactId := ctx.Params("contactId")
 
-	if err := c.UseCase.Delete(ctx.UserContext(), user, contactId); err != nil {
+	request := &model.DeleteContactRequest{
+		UserId: user.ID,
+		ID:     contactId,
+	}
+
+	if err := c.UseCase.Delete(ctx.UserContext(), request); err != nil {
 		c.Log.WithError(err).Error("error deleting contact")
 		return err
 	}
