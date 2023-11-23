@@ -31,7 +31,7 @@ func (c *ContactController) Create(ctx *fiber.Ctx) error {
 	}
 	request.UserId = user.ID
 
-	response, err := c.UseCase.Create(ctx.UserContext(), user, request)
+	response, err := c.UseCase.Create(ctx.UserContext(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("error creating contact")
 		return err
@@ -73,9 +73,13 @@ func (c *ContactController) List(ctx *fiber.Ctx) error {
 
 func (c *ContactController) Get(ctx *fiber.Ctx) error {
 	user := ctx.Locals("user").(*entity.User)
-	contactId := ctx.Params("contactId")
 
-	response, err := c.UseCase.Get(ctx.UserContext(), user, contactId)
+	request := &model.GetContactRequest{
+		UserId: user.ID,
+		ID:     ctx.Params("contactId"),
+	}
+
+	response, err := c.UseCase.Get(ctx.UserContext(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("error getting contact")
 		return err
@@ -96,7 +100,7 @@ func (c *ContactController) Update(ctx *fiber.Ctx) error {
 	request.UserId = user.ID
 	request.ID = ctx.Params("contactId")
 
-	response, err := c.UseCase.Update(ctx.UserContext(), user, request)
+	response, err := c.UseCase.Update(ctx.UserContext(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("error updating contact")
 		return err
