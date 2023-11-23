@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang-clean-architecture/internal/entity"
+	"golang-clean-architecture/internal/gateway/messaging"
 	"golang-clean-architecture/internal/model"
 	"golang-clean-architecture/internal/repository"
 	"gorm.io/gorm"
@@ -17,14 +18,17 @@ type ContactUseCase struct {
 	Log               *logrus.Logger
 	Validate          *validator.Validate
 	ContactRepository *repository.ContactRepository
+	ContactProducer   *messaging.ContactProducer
 }
 
-func NewContactUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate, contactRepository *repository.ContactRepository) *ContactUseCase {
+func NewContactUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate,
+	contactRepository *repository.ContactRepository, contactProducer *messaging.ContactProducer) *ContactUseCase {
 	return &ContactUseCase{
 		DB:                db,
 		Log:               logger,
 		Validate:          validate,
 		ContactRepository: contactRepository,
+		ContactProducer:   contactProducer,
 	}
 }
 

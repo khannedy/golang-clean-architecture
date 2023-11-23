@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang-clean-architecture/internal/entity"
+	"golang-clean-architecture/internal/gateway/messaging"
 	"golang-clean-architecture/internal/model"
 	"golang-clean-architecture/internal/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -18,14 +19,17 @@ type UserUseCase struct {
 	Log            *logrus.Logger
 	Validate       *validator.Validate
 	UserRepository *repository.UserRepository
+	UserProducer   *messaging.UserProducer
 }
 
-func NewUserUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate, userRepository *repository.UserRepository) *UserUseCase {
+func NewUserUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate,
+	userRepository *repository.UserRepository, userProducer *messaging.UserProducer) *UserUseCase {
 	return &UserUseCase{
 		DB:             db,
 		Log:            logger,
 		Validate:       validate,
 		UserRepository: userRepository,
+		UserProducer:   userProducer,
 	}
 }
 
