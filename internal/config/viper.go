@@ -1,10 +1,13 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"github.com/spf13/viper"
+)
 
 // NewViper is a function to load config from config.json
 // You can change the implementation, for example load from env file, consul, etcd, etc
-func NewViper() (*viper.Viper, error) {
+func NewViper() *viper.Viper {
 	config := viper.New()
 
 	config.SetConfigName("config")
@@ -14,8 +17,8 @@ func NewViper() (*viper.Viper, error) {
 	err := config.ReadInConfig()
 
 	if err != nil {
-		return nil, err
+		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
 
-	return config, nil
+	return config
 }
