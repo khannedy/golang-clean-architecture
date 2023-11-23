@@ -34,19 +34,13 @@ This is golang clean architecture template.
 
 All configuration is in `config.json` file.
 
-## How to run
+## API Spec
 
-### Run application
+All API Spec is in `api` folder.
 
-```bash
-go run cmd/web/main.go
-```
+## Database Migration
 
-### Run Unit Test
-
-```bash
-go test -v ./test/
-```
+All database migration is in `db/migrations` folder.
 
 ### Create Migration
 
@@ -58,4 +52,18 @@ migrate create -ext sql -dir db/migrations create_table_xxx
 
 ```shell
 migrate -database "mysql://root:@tcp(localhost:3306)/golang_clean_architecture?charset=utf8mb4&parseTime=True&loc=Local" -path db/migrations up
+```
+
+## Run Application
+
+### Run unit test
+
+```bash
+go test -v ./test/
+```
+
+### Run web server
+
+```bash
+go run cmd/web/main.go
 ```
