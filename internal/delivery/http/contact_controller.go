@@ -31,7 +31,7 @@ func (c *ContactController) Create(ctx *fiber.Ctx) error {
 	}
 	request.UserId = user.ID
 
-	response, err := c.UseCase.Create(user, request)
+	response, err := c.UseCase.Create(ctx.UserContext(), user, request)
 	if err != nil {
 		c.Log.WithError(err).Error("error creating contact")
 		return err
@@ -52,7 +52,7 @@ func (c *ContactController) List(ctx *fiber.Ctx) error {
 		Size:   ctx.QueryInt("size", 10),
 	}
 
-	responses, total, err := c.UseCase.Search(user, request)
+	responses, total, err := c.UseCase.Search(ctx.UserContext(), user, request)
 	if err != nil {
 		c.Log.WithError(err).Error("error searching contact")
 		return err
@@ -75,7 +75,7 @@ func (c *ContactController) Get(ctx *fiber.Ctx) error {
 	user := ctx.Locals("user").(*entity.User)
 	contactId := ctx.Params("contactId")
 
-	response, err := c.UseCase.Get(user, contactId)
+	response, err := c.UseCase.Get(ctx.UserContext(), user, contactId)
 	if err != nil {
 		c.Log.WithError(err).Error("error getting contact")
 		return err
@@ -96,7 +96,7 @@ func (c *ContactController) Update(ctx *fiber.Ctx) error {
 	request.UserId = user.ID
 	request.ID = ctx.Params("contactId")
 
-	response, err := c.UseCase.Update(user, request)
+	response, err := c.UseCase.Update(ctx.UserContext(), user, request)
 	if err != nil {
 		c.Log.WithError(err).Error("error updating contact")
 		return err
@@ -109,7 +109,7 @@ func (c *ContactController) Delete(ctx *fiber.Ctx) error {
 	user := ctx.Locals("user").(*entity.User)
 	contactId := ctx.Params("contactId")
 
-	if err := c.UseCase.Delete(user, contactId); err != nil {
+	if err := c.UseCase.Delete(ctx.UserContext(), user, contactId); err != nil {
 		c.Log.WithError(err).Error("error deleting contact")
 		return err
 	}

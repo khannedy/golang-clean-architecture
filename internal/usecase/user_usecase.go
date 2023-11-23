@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"database/sql"
+	"context"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -26,8 +26,8 @@ func NewUserUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Vali
 	}
 }
 
-func (c *UserUseCase) Create(request *model.RegisterUserRequest) (*model.UserResponse, error) {
-	tx := c.DB.Begin()
+func (c *UserUseCase) Create(ctx context.Context, request *model.RegisterUserRequest) (*model.UserResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
 	err := c.Validate.Struct(request)
@@ -77,14 +77,14 @@ func (c *UserUseCase) Create(request *model.RegisterUserRequest) (*model.UserRes
 	return response, nil
 }
 
-func (c *UserUseCase) Login(request *model.LoginUserRequest) (*model.UserResponse, error) {
+func (c *UserUseCase) Login(ctx context.Context, request *model.LoginUserRequest) (*model.UserResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
+
 	if err := c.Validate.Struct(request); err != nil {
 		c.Log.Warnf("Invalid request body  : %+v", err)
 		return nil, fiber.ErrBadRequest
 	}
-
-	tx := c.DB.Begin()
-	defer tx.Rollback()
 
 	user := new(entity.User)
 	if err := tx.Take(user, "id = ?", request.ID).Error; err != nil {
@@ -112,9 +112,20 @@ func (c *UserUseCase) Login(request *model.LoginUserRequest) (*model.UserRespons
 	return response, nil
 }
 
-func (c *UserUseCase) Current(user *entity.User) (*model.UserResponse, error) {
-	tx := c.DB.Begin(&sql.TxOptions{ReadOnly: true})
+func (c *UserUseCase) Current(ctx context.Context, request *model.GetUserRequest) (*model.UserResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
+
+	if err := c.Validate.Struct(request); err != nil {
+		c.Log.Warnf("Invalid request body : %+v", err)
+		return nil, fiber.ErrBadRequest
+	}
+
+	user := new(entity.User)
+	if err := tx.Take(user, "id = ?", request.ID).Error; err != nil {
+		c.Log.Warnf("Failed find user by id : %+v", err)
+		return nil, fiber.ErrNotFound
+	}
 
 	response := &model.UserResponse{
 		ID:        user.ID,
@@ -131,9 +142,20 @@ func (c *UserUseCase) Current(user *entity.User) (*model.UserResponse, error) {
 	return response, nil
 }
 
-func (c *UserUseCase) Logout(user *entity.User) (bool, error) {
-	tx := c.DB.Begin()
+func (c *UserUseCase) Logout(ctx context.Context, request *model.LogoutUserRequest) (bool, error) {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
+
+	if err := c.Validate.Struct(request); err != nil {
+		c.Log.Warnf("Invalid request body : %+v", err)
+		return false, fiber.ErrBadRequest
+	}
+
+	user := new(entity.User)
+	if err := tx.Take(user, "id = ?", request.ID).Error; err != nil {
+		c.Log.Warnf("Failed find user by id : %+v", err)
+		return false, fiber.ErrNotFound
+	}
 
 	user.Token = ""
 
@@ -150,13 +172,19 @@ func (c *UserUseCase) Logout(user *entity.User) (bool, error) {
 	return true, nil
 }
 
-func (c *UserUseCase) Update(user *entity.User, request *model.UpdateUserRequest) (*model.UserResponse, error) {
-	tx := c.DB.Begin()
+func (c *UserUseCase) Update(ctx context.Context, request *model.UpdateUserRequest) (*model.UserResponse, error) {
+	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
 	if err := c.Validate.Struct(request); err != nil {
 		c.Log.Warnf("Invalid request body : %+v", err)
 		return nil, fiber.ErrBadRequest
+	}
+
+	user := new(entity.User)
+	if err := tx.Take(user, "id = ?", request.ID).Error; err != nil {
+		c.Log.Warnf("Failed find user by id : %+v", err)
+		return nil, fiber.ErrNotFound
 	}
 
 	if request.Name != "" {

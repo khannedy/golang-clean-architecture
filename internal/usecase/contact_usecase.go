@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -24,7 +25,7 @@ func NewContactUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.V
 	}
 }
 
-func (c *ContactUseCase) Create(user *entity.User, request *model.CreateContactRequest) (*model.ContactResponse, error) {
+func (c *ContactUseCase) Create(ctx context.Context, user *entity.User, request *model.CreateContactRequest) (*model.ContactResponse, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -64,7 +65,7 @@ func (c *ContactUseCase) Create(user *entity.User, request *model.CreateContactR
 	return response, nil
 }
 
-func (c *ContactUseCase) Update(user *entity.User, request *model.UpdateContactRequest) (*model.ContactResponse, error) {
+func (c *ContactUseCase) Update(ctx context.Context, user *entity.User, request *model.UpdateContactRequest) (*model.ContactResponse, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -106,7 +107,7 @@ func (c *ContactUseCase) Update(user *entity.User, request *model.UpdateContactR
 	return response, nil
 }
 
-func (c *ContactUseCase) Get(user *entity.User, contactId string) (*model.ContactResponse, error) {
+func (c *ContactUseCase) Get(ctx context.Context, user *entity.User, contactId string) (*model.ContactResponse, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -133,7 +134,7 @@ func (c *ContactUseCase) Get(user *entity.User, contactId string) (*model.Contac
 	return response, nil
 }
 
-func (c *ContactUseCase) Delete(user *entity.User, contactId string) error {
+func (c *ContactUseCase) Delete(ctx context.Context, user *entity.User, contactId string) error {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -156,7 +157,7 @@ func (c *ContactUseCase) Delete(user *entity.User, contactId string) error {
 	return nil
 }
 
-func (c *ContactUseCase) Search(user *entity.User, request *model.SearchContactRequest) ([]model.ContactResponse, int64, error) {
+func (c *ContactUseCase) Search(ctx context.Context, user *entity.User, request *model.SearchContactRequest) ([]model.ContactResponse, int64, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 

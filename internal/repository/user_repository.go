@@ -1,5 +1,11 @@
 package repository
 
-// UserRepository is an interface for user repository contract
-type UserRepository interface {
+import (
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
+)
+
+type UserRepository struct {
+	DB  *gorm.DB
+	Log *logrus.Logger
 }
