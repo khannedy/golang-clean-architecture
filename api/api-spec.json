@@ -166,7 +166,10 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -210,7 +213,10 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -273,7 +279,10 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -349,32 +358,52 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "page",
             "in": "query",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 1
+            }
           },
           {
             "name": "size",
             "in": "query",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 10
+            }
           },
           {
             "name": "name",
             "in": "query",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "phone",
             "in": "query",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "email",
             "in": "query",
-            "required": false
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -449,12 +478,18 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "contactId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -507,12 +542,18 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "contactId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -588,12 +629,18 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "contactId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -625,12 +672,18 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "contactId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -712,12 +765,18 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "contactId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -778,17 +837,26 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "contactId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "addressId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -844,17 +912,26 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "contactId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "addressId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -936,17 +1013,26 @@
           {
             "name": "Authorization",
             "in": "header",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "contactId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "addressId",
             "in": "path",
-            "required": true
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
