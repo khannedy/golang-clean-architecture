@@ -2,8 +2,10 @@ package test
 
 import (
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"golang-clean-architecture/entity"
 	"strconv"
+	"testing"
 )
 
 func ClearAll() {
@@ -48,4 +50,41 @@ func CreateContacts(user *entity.User, total int) {
 			log.Fatalf("Failed create contact data : %+v", err)
 		}
 	}
+}
+
+func CreateAddresses(t *testing.T, contact *entity.Contact, total int) {
+	for i := 0; i < total; i++ {
+		address := &entity.Address{
+			ID:         uuid.NewString(),
+			ContactId:  contact.ID,
+			Street:     "Jalan Belum Jadi",
+			City:       "Jakarta",
+			Province:   "DKI Jakarta",
+			PostalCode: "2131323",
+			Country:    "Indonesia",
+		}
+		err := db.Create(address).Error
+		assert.Nil(t, err)
+	}
+}
+
+func GetFirstUser(t *testing.T) *entity.User {
+	user := new(entity.User)
+	err := db.First(user).Error
+	assert.Nil(t, err)
+	return user
+}
+
+func GetFirstContact(t *testing.T, user *entity.User) *entity.Contact {
+	contact := new(entity.Contact)
+	err := db.Where("user_id = ?", user.ID).First(contact).Error
+	assert.Nil(t, err)
+	return contact
+}
+
+func GetFirstAddress(t *testing.T, contact *entity.Contact) *entity.Address {
+	address := new(entity.Address)
+	err := db.Where("contact_id = ?", contact.ID).First(address).Error
+	assert.Nil(t, err)
+	return address
 }

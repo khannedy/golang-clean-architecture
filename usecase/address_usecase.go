@@ -76,6 +76,11 @@ func (c *AddressUseCase) Update(user *entity.User, request *model.UpdateAddressR
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
+	if err := c.Validate.Struct(request); err != nil {
+		c.Log.WithError(err).Error("failed to validate request body")
+		return nil, fiber.ErrBadRequest
+	}
+
 	contact := new(entity.Contact)
 	if err := tx.Where("id = ? AND user_id = ?", request.ContactId, user.ID).First(contact).Error; err != nil {
 		c.Log.WithError(err).Error("failed to find contact")
