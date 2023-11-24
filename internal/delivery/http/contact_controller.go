@@ -3,7 +3,7 @@ package http
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
-	"golang-clean-architecture/internal/entity"
+	"golang-clean-architecture/internal/delivery/http/middleware"
 	"golang-clean-architecture/internal/model"
 	"golang-clean-architecture/internal/usecase"
 	"math"
@@ -22,14 +22,14 @@ func NewContactController(useCase *usecase.ContactUseCase, log *logrus.Logger) *
 }
 
 func (c *ContactController) Create(ctx *fiber.Ctx) error {
-	user := ctx.Locals("user").(*entity.User)
+	auth := middleware.GetUser(ctx)
 
 	request := new(model.CreateContactRequest)
 	if err := ctx.BodyParser(request); err != nil {
 		c.Log.WithError(err).Error("error parsing request body")
 		return fiber.ErrBadRequest
 	}
-	request.UserId = user.ID
+	request.UserId = auth.ID
 
 	response, err := c.UseCase.Create(ctx.UserContext(), request)
 	if err != nil {
@@ -41,10 +41,10 @@ func (c *ContactController) Create(ctx *fiber.Ctx) error {
 }
 
 func (c *ContactController) List(ctx *fiber.Ctx) error {
-	user := ctx.Locals("user").(*entity.User)
+	auth := middleware.GetUser(ctx)
 
 	request := &model.SearchContactRequest{
-		UserId: user.ID,
+		UserId: auth.ID,
 		Name:   ctx.Query("name", ""),
 		Email:  ctx.Query("email", ""),
 		Phone:  ctx.Query("phone", ""),
@@ -72,10 +72,10 @@ func (c *ContactController) List(ctx *fiber.Ctx) error {
 }
 
 func (c *ContactController) Get(ctx *fiber.Ctx) error {
-	user := ctx.Locals("user").(*entity.User)
+	auth := middleware.GetUser(ctx)
 
 	request := &model.GetContactRequest{
-		UserId: user.ID,
+		UserId: auth.ID,
 		ID:     ctx.Params("contactId"),
 	}
 
@@ -89,7 +89,7 @@ func (c *ContactController) Get(ctx *fiber.Ctx) error {
 }
 
 func (c *ContactController) Update(ctx *fiber.Ctx) error {
-	user := ctx.Locals("user").(*entity.User)
+	auth := middleware.GetUser(ctx)
 
 	request := new(model.UpdateContactRequest)
 	if err := ctx.BodyParser(request); err != nil {
@@ -97,7 +97,7 @@ func (c *ContactController) Update(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	request.UserId = user.ID
+	request.UserId = auth.ID
 	request.ID = ctx.Params("contactId")
 
 	response, err := c.UseCase.Update(ctx.UserContext(), request)
@@ -110,11 +110,11 @@ func (c *ContactController) Update(ctx *fiber.Ctx) error {
 }
 
 func (c *ContactController) Delete(ctx *fiber.Ctx) error {
-	user := ctx.Locals("user").(*entity.User)
+	auth := middleware.GetUser(ctx)
 	contactId := ctx.Params("contactId")
 
 	request := &model.DeleteContactRequest{
-		UserId: user.ID,
+		UserId: auth.ID,
 		ID:     contactId,
 	}
 

@@ -4,7 +4,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 	"golang-clean-architecture/internal/delivery/http/middleware"
-	"golang-clean-architecture/internal/entity"
 	"golang-clean-architecture/internal/model"
 	"golang-clean-architecture/internal/usecase"
 )
@@ -22,7 +21,7 @@ func NewAddressController(useCase *usecase.AddressUseCase, log *logrus.Logger) *
 }
 
 func (c *AddressController) Create(ctx *fiber.Ctx) error {
-	user := ctx.Locals("user").(*entity.User)
+	auth := middleware.GetUser(ctx)
 
 	request := new(model.CreateAddressRequest)
 	if err := ctx.BodyParser(request); err != nil {
@@ -30,7 +29,7 @@ func (c *AddressController) Create(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	request.UserId = user.ID
+	request.UserId = auth.ID
 	request.ContactId = ctx.Params("contactId")
 
 	response, err := c.UseCase.Create(ctx.UserContext(), request)
@@ -43,11 +42,11 @@ func (c *AddressController) Create(ctx *fiber.Ctx) error {
 }
 
 func (c *AddressController) List(ctx *fiber.Ctx) error {
-	user := middleware.GetUser(ctx)
+	auth := middleware.GetUser(ctx)
 	contactId := ctx.Params("contactId")
 
 	request := &model.ListAddressRequest{
-		UserId:    user.ID,
+		UserId:    auth.ID,
 		ContactId: contactId,
 	}
 
@@ -61,12 +60,12 @@ func (c *AddressController) List(ctx *fiber.Ctx) error {
 }
 
 func (c *AddressController) Get(ctx *fiber.Ctx) error {
-	user := middleware.GetUser(ctx)
+	auth := middleware.GetUser(ctx)
 	contactId := ctx.Params("contactId")
 	addressId := ctx.Params("addressId")
 
 	request := &model.GetAddressRequest{
-		UserId:    user.ID,
+		UserId:    auth.ID,
 		ContactId: contactId,
 		ID:        addressId,
 	}
@@ -81,7 +80,7 @@ func (c *AddressController) Get(ctx *fiber.Ctx) error {
 }
 
 func (c *AddressController) Update(ctx *fiber.Ctx) error {
-	user := middleware.GetUser(ctx)
+	auth := middleware.GetUser(ctx)
 
 	request := new(model.UpdateAddressRequest)
 	if err := ctx.BodyParser(request); err != nil {
@@ -89,7 +88,7 @@ func (c *AddressController) Update(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	request.UserId = user.ID
+	request.UserId = auth.ID
 	request.ContactId = ctx.Params("contactId")
 	request.ID = ctx.Params("addressId")
 
@@ -103,12 +102,12 @@ func (c *AddressController) Update(ctx *fiber.Ctx) error {
 }
 
 func (c *AddressController) Delete(ctx *fiber.Ctx) error {
-	user := middleware.GetUser(ctx)
+	auth := middleware.GetUser(ctx)
 	contactId := ctx.Params("contactId")
 	addressId := ctx.Params("addressId")
 
 	request := &model.DeleteAddressRequest{
-		UserId:    user.ID,
+		UserId:    auth.ID,
 		ContactId: contactId,
 		ID:        addressId,
 	}

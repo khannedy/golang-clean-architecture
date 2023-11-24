@@ -34,7 +34,7 @@ func NewUserUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Vali
 	}
 }
 
-func (c *UserUseCase) Verify(ctx context.Context, request *model.VerifyUserRequest) (*entity.User, error) {
+func (c *UserUseCase) Verify(ctx context.Context, request *model.VerifyUserRequest) (*model.Auth, error) {
 	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
@@ -55,7 +55,7 @@ func (c *UserUseCase) Verify(ctx context.Context, request *model.VerifyUserReque
 		return nil, fiber.ErrInternalServerError
 	}
 
-	return user, nil
+	return &model.Auth{ID: user.ID}, nil
 }
 
 func (c *UserUseCase) Create(ctx context.Context, request *model.RegisterUserRequest) (*model.UserResponse, error) {
