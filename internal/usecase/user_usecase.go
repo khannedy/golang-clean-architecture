@@ -7,7 +7,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"golang-clean-architecture/internal/entity"
+	"golang-clean-architecture/internal/gateway/messaging"
 	"golang-clean-architecture/internal/model"
+	"golang-clean-architecture/internal/model/converter"
 	"golang-clean-architecture/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -18,14 +20,17 @@ type UserUseCase struct {
 	Log            *logrus.Logger
 	Validate       *validator.Validate
 	UserRepository *repository.UserRepository
+	UserProducer   *messaging.UserProducer
 }
 
-func NewUserUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate, userRepository *repository.UserRepository) *UserUseCase {
+func NewUserUseCase(db *gorm.DB, logger *logrus.Logger, validate *validator.Validate,
+	userRepository *repository.UserRepository, userProducer *messaging.UserProducer) *UserUseCase {
 	return &UserUseCase{
 		DB:             db,
 		Log:            logger,
 		Validate:       validate,
 		UserRepository: userRepository,
+		UserProducer:   userProducer,
 	}
 }
 
@@ -39,12 +44,6 @@ func (c *UserUseCase) Create(ctx context.Context, request *model.RegisterUserReq
 		return nil, fiber.ErrBadRequest
 	}
 
-	password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.Log.Warnf("Failed to generate bcrype hash : %+v", err)
-		return nil, fiber.ErrInternalServerError
-	}
-
 	total, err := c.UserRepository.CountById(tx, request.ID)
 	if err != nil {
 		c.Log.Warnf("Failed count user from database : %+v", err)
@@ -56,27 +55,36 @@ func (c *UserUseCase) Create(ctx context.Context, request *model.RegisterUserReq
 		return nil, fiber.ErrConflict
 	}
 
+	password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.Log.Warnf("Failed to generate bcrype hash : %+v", err)
+		return nil, fiber.ErrInternalServerError
+	}
+
 	user := &entity.User{
 		ID:       request.ID,
 		Password: string(password),
 		Name:     request.Name,
 	}
 
-	err = c.UserRepository.Create(tx, user)
-	if err != nil {
+	if err := c.UserRepository.Create(tx, user); err != nil {
 		c.Log.Warnf("Failed create user to database : %+v", err)
 		return nil, fiber.ErrInternalServerError
 	}
 
-	tx.Commit()
-
-	response := &model.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	if err := tx.Commit().Error; err != nil {
+		c.Log.Warnf("Failed commit transaction : %+v", err)
+		return nil, fiber.ErrInternalServerError
 	}
-	return response, nil
+
+	event := converter.UserToEvent(user)
+	c.Log.Info("Publishing user created event")
+	if err = c.UserProducer.Send(event); err != nil {
+		c.Log.Warnf("Failed publish user created event : %+v", err)
+		return nil, fiber.ErrInternalServerError
+	}
+
+	return converter.UserToResponse(user), nil
 }
 
 func (c *UserUseCase) Login(ctx context.Context, request *model.LoginUserRequest) (*model.UserResponse, error) {
@@ -105,13 +113,19 @@ func (c *UserUseCase) Login(ctx context.Context, request *model.LoginUserRequest
 		return nil, fiber.ErrInternalServerError
 	}
 
-	tx.Commit()
-
-	response := &model.UserResponse{
-		Token: user.Token,
+	if err := tx.Commit().Error; err != nil {
+		c.Log.Warnf("Failed commit transaction : %+v", err)
+		return nil, fiber.ErrInternalServerError
 	}
 
-	return response, nil
+	event := converter.UserToEvent(user)
+	c.Log.Info("Publishing user created event")
+	if err := c.UserProducer.Send(event); err != nil {
+		c.Log.Warnf("Failed publish user created event : %+v", err)
+		return nil, fiber.ErrInternalServerError
+	}
+
+	return converter.UserToTokenResponse(user), nil
 }
 
 func (c *UserUseCase) Current(ctx context.Context, request *model.GetUserRequest) (*model.UserResponse, error) {
@@ -129,19 +143,12 @@ func (c *UserUseCase) Current(ctx context.Context, request *model.GetUserRequest
 		return nil, fiber.ErrNotFound
 	}
 
-	response := &model.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
-
 	if err := tx.Commit().Error; err != nil {
 		c.Log.Warnf("Failed commit transaction : %+v", err)
 		return nil, fiber.ErrInternalServerError
 	}
 
-	return response, nil
+	return converter.UserToResponse(user), nil
 }
 
 func (c *UserUseCase) Logout(ctx context.Context, request *model.LogoutUserRequest) (bool, error) {
@@ -168,6 +175,13 @@ func (c *UserUseCase) Logout(ctx context.Context, request *model.LogoutUserReque
 
 	if err := tx.Commit().Error; err != nil {
 		c.Log.Warnf("Failed commit transaction : %+v", err)
+		return false, fiber.ErrInternalServerError
+	}
+
+	event := converter.UserToEvent(user)
+	c.Log.Info("Publishing user created event")
+	if err := c.UserProducer.Send(event); err != nil {
+		c.Log.Warnf("Failed publish user created event : %+v", err)
 		return false, fiber.ErrInternalServerError
 	}
 
@@ -212,12 +226,12 @@ func (c *UserUseCase) Update(ctx context.Context, request *model.UpdateUserReque
 		return nil, fiber.ErrInternalServerError
 	}
 
-	response := &model.UserResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	event := converter.UserToEvent(user)
+	c.Log.Info("Publishing user created event")
+	if err := c.UserProducer.Send(event); err != nil {
+		c.Log.Warnf("Failed publish user created event : %+v", err)
+		return nil, fiber.ErrInternalServerError
 	}
 
-	return response, nil
+	return converter.UserToResponse(user), nil
 }

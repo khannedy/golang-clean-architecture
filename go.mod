@@ -3,6 +3,7 @@ module golang-clean-architecture
 go 1.21
 
 require (
+	github.com/confluentinc/confluent-kafka-go/v2 v2.3.0
 	github.com/go-playground/validator/v10 v10.15.5
 	github.com/gofiber/fiber/v2 v2.49.2
 	github.com/google/uuid v1.3.1

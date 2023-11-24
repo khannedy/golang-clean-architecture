@@ -20,5 +20,18 @@
       "max": 100,
       "lifetime": 300
     }
+  },
+  "kafka": {
+    "bootstrap": {
+      "servers": "localhost:9092"
+    },
+    "group": {
+      "id": "golang-clean-architecture"
+    },
+    "auto": {
+      "offset": {
+        "reset": "earliest"
+      }
+    }
   }
 }
