@@ -9,6 +9,7 @@ import (
 	"golang-clean-architecture/internal/entity"
 	"golang-clean-architecture/internal/gateway/messaging"
 	"golang-clean-architecture/internal/model"
+	"golang-clean-architecture/internal/model/converter"
 	"golang-clean-architecture/internal/repository"
 	"gorm.io/gorm"
 )
@@ -60,16 +61,13 @@ func (c *ContactUseCase) Create(ctx context.Context, request *model.CreateContac
 		return nil, fiber.ErrInternalServerError
 	}
 
-	response := &model.ContactResponse{
-		ID:        contact.ID,
-		FirstName: contact.FirstName,
-		LastName:  contact.LastName,
-		Email:     contact.Email,
-		Phone:     contact.Phone,
-		CreatedAt: contact.CreatedAt,
-		UpdatedAt: contact.UpdatedAt,
+	event := converter.ContactToEvent(contact)
+	if err := c.ContactProducer.Send(event); err != nil {
+		c.Log.WithError(err).Error("error publishing contact")
+		return nil, fiber.ErrInternalServerError
 	}
-	return response, nil
+
+	return converter.ContactToResponse(contact), nil
 }
 
 func (c *ContactUseCase) Update(ctx context.Context, request *model.UpdateContactRequest) (*model.ContactResponse, error) {
@@ -102,16 +100,13 @@ func (c *ContactUseCase) Update(ctx context.Context, request *model.UpdateContac
 		return nil, fiber.ErrInternalServerError
 	}
 
-	response := &model.ContactResponse{
-		ID:        contact.ID,
-		FirstName: contact.FirstName,
-		LastName:  contact.LastName,
-		Email:     contact.Email,
-		Phone:     contact.Phone,
-		CreatedAt: contact.CreatedAt,
-		UpdatedAt: contact.UpdatedAt,
+	event := converter.ContactToEvent(contact)
+	if err := c.ContactProducer.Send(event); err != nil {
+		c.Log.WithError(err).Error("error publishing contact")
+		return nil, fiber.ErrInternalServerError
 	}
-	return response, nil
+
+	return converter.ContactToResponse(contact), nil
 }
 
 func (c *ContactUseCase) Get(ctx context.Context, request *model.GetContactRequest) (*model.ContactResponse, error) {
@@ -134,16 +129,7 @@ func (c *ContactUseCase) Get(ctx context.Context, request *model.GetContactReque
 		return nil, fiber.ErrInternalServerError
 	}
 
-	response := &model.ContactResponse{
-		ID:        contact.ID,
-		FirstName: contact.FirstName,
-		LastName:  contact.LastName,
-		Email:     contact.Email,
-		Phone:     contact.Phone,
-		CreatedAt: contact.CreatedAt,
-		UpdatedAt: contact.UpdatedAt,
-	}
-	return response, nil
+	return converter.ContactToResponse(contact), nil
 }
 
 func (c *ContactUseCase) Delete(ctx context.Context, request *model.DeleteContactRequest) error {
@@ -196,15 +182,7 @@ func (c *ContactUseCase) Search(ctx context.Context, request *model.SearchContac
 
 	responses := make([]model.ContactResponse, len(contacts))
 	for i, contact := range contacts {
-		responses[i] = model.ContactResponse{
-			ID:        contact.ID,
-			FirstName: contact.FirstName,
-			LastName:  contact.LastName,
-			Email:     contact.Email,
-			Phone:     contact.Phone,
-			CreatedAt: contact.CreatedAt,
-			UpdatedAt: contact.UpdatedAt,
-		}
+		responses[i] = *converter.ContactToResponse(&contact)
 	}
 
 	return responses, total, nil
