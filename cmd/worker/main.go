@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"golang-clean-architecture/internal/config"
 	"golang-clean-architecture/internal/delivery/messaging"
 	"os"
@@ -14,23 +15,22 @@ func main() {
 	logger := config.NewLogger(viperConfig)
 	logger.Info("Starting worker service")
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	logger.Info("setup user consumer")
 	userConsumer := config.NewKafkaConsumer(viperConfig, logger)
-	userSignal := make(chan string)
 	userHandler := messaging.NewUserConsumer(logger)
-	go messaging.ConsumeTopic(userSignal, userConsumer, "users", logger, userHandler.Consume)
+	go messaging.ConsumeTopic(ctx, userConsumer, "users", logger, userHandler.Consume)
 
 	logger.Info("setup contact consumer")
 	contactConsumer := config.NewKafkaConsumer(viperConfig, logger)
-	contactSignal := make(chan string)
 	contactHandler := messaging.NewContactConsumer(logger)
-	go messaging.ConsumeTopic(contactSignal, contactConsumer, "contacts", logger, contactHandler.Consume)
+	go messaging.ConsumeTopic(ctx, contactConsumer, "contacts", logger, contactHandler.Consume)
 
 	logger.Info("setup address consumer")
 	addressConsumer := config.NewKafkaConsumer(viperConfig, logger)
-	addressSignal := make(chan string)
 	addressHandler := messaging.NewAddressConsumer(logger)
-	go messaging.ConsumeTopic(addressSignal, addressConsumer, "addresses", logger, addressHandler.Consume)
+	go messaging.ConsumeTopic(ctx, addressConsumer, "addresses", logger, addressHandler.Consume)
 
 	logger.Info("Worker is running")
 
@@ -41,10 +41,8 @@ func main() {
 	for !stop {
 		select {
 		case s := <-terminateSignals:
-			logger.Info("Got one of stop signals, shutting down server gracefully, SIGNAL NAME :", s)
-			userSignal <- "stop"
-			contactSignal <- "stop"
-			addressSignal <- "stop"
+			logger.Info("Got one of stop signals, shutting down worker gracefully, SIGNAL NAME :", s)
+			cancel()
 			stop = true
 		}
 	}

@@ -1,6 +1,7 @@
 package messaging
 
 import (
+	"context"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/sirupsen/logrus"
 	"time"
@@ -8,19 +9,18 @@ import (
 
 type ConsumerHandler func(message *kafka.Message) error
 
-func ConsumeTopic(signal chan string, consumer *kafka.Consumer, topic string, log *logrus.Logger, handler ConsumerHandler) {
+func ConsumeTopic(ctx context.Context, consumer *kafka.Consumer, topic string, log *logrus.Logger, handler ConsumerHandler) {
 	err := consumer.Subscribe(topic, nil)
 	if err != nil {
 		log.Fatalf("Failed to subscribe to topic: %v", err)
 	}
 
-	stop := false
+	run := true
 
-	for !stop {
+	for run {
 		select {
-		case <-signal:
-			log.Info("Got one of stop signals, shutting down server gracefully")
-			stop = true
+		case <-ctx.Done():
+			run = false
 		default:
 			message, err := consumer.ReadMessage(time.Second)
 			if err == nil {
@@ -39,7 +39,7 @@ func ConsumeTopic(signal chan string, consumer *kafka.Consumer, topic string, lo
 		}
 	}
 
-	log.Info("Closing consumer")
+	log.Infof("Closing consumer for topic : %s", topic)
 	err = consumer.Close()
 	if err != nil {
 		panic(err)
