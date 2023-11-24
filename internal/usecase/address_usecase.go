@@ -9,6 +9,7 @@ import (
 	"golang-clean-architecture/internal/entity"
 	"golang-clean-architecture/internal/gateway/messaging"
 	"golang-clean-architecture/internal/model"
+	"golang-clean-architecture/internal/model/converter"
 	"golang-clean-architecture/internal/repository"
 	"gorm.io/gorm"
 )
@@ -70,17 +71,13 @@ func (c *AddressUseCase) Create(ctx context.Context, request *model.CreateAddres
 		return nil, fiber.ErrInternalServerError
 	}
 
-	response := &model.AddressResponse{
-		ID:         address.ID,
-		Street:     address.Street,
-		City:       address.City,
-		Province:   address.Province,
-		PostalCode: address.PostalCode,
-		Country:    address.Country,
-		CreatedAt:  address.CreatedAt,
-		UpdatedAt:  address.UpdatedAt,
+	event := converter.AddressToEvent(address)
+	if err := c.AddressProducer.Send(event); err != nil {
+		c.Log.WithError(err).Error("failed to publish address event")
+		return nil, fiber.ErrInternalServerError
 	}
-	return response, nil
+
+	return converter.AddressToResponse(address), nil
 }
 
 func (c *AddressUseCase) Update(ctx context.Context, request *model.UpdateAddressRequest) (*model.AddressResponse, error) {
@@ -120,17 +117,13 @@ func (c *AddressUseCase) Update(ctx context.Context, request *model.UpdateAddres
 		return nil, fiber.ErrInternalServerError
 	}
 
-	response := &model.AddressResponse{
-		ID:         address.ID,
-		Street:     address.Street,
-		City:       address.City,
-		Province:   address.Province,
-		PostalCode: address.PostalCode,
-		Country:    address.Country,
-		CreatedAt:  address.CreatedAt,
-		UpdatedAt:  address.UpdatedAt,
+	event := converter.AddressToEvent(address)
+	if err := c.AddressProducer.Send(event); err != nil {
+		c.Log.WithError(err).Error("failed to publish address event")
+		return nil, fiber.ErrInternalServerError
 	}
-	return response, nil
+
+	return converter.AddressToResponse(address), nil
 }
 
 func (c *AddressUseCase) Get(ctx context.Context, request *model.GetAddressRequest) (*model.AddressResponse, error) {
@@ -154,17 +147,7 @@ func (c *AddressUseCase) Get(ctx context.Context, request *model.GetAddressReque
 		return nil, fiber.ErrInternalServerError
 	}
 
-	response := &model.AddressResponse{
-		ID:         address.ID,
-		Street:     address.Street,
-		City:       address.City,
-		Province:   address.Province,
-		PostalCode: address.PostalCode,
-		Country:    address.Country,
-		CreatedAt:  address.CreatedAt,
-		UpdatedAt:  address.UpdatedAt,
-	}
-	return response, nil
+	return converter.AddressToResponse(address), nil
 }
 
 func (c *AddressUseCase) Delete(ctx context.Context, request *model.DeleteAddressRequest) error {
@@ -219,16 +202,7 @@ func (c *AddressUseCase) List(ctx context.Context, request *model.ListAddressReq
 
 	responses := make([]model.AddressResponse, len(addresses))
 	for i, address := range addresses {
-		responses[i] = model.AddressResponse{
-			ID:         address.ID,
-			Street:     address.Street,
-			City:       address.City,
-			Province:   address.Province,
-			PostalCode: address.PostalCode,
-			Country:    address.Country,
-			CreatedAt:  address.CreatedAt,
-			UpdatedAt:  address.UpdatedAt,
-		}
+		responses[i] = *converter.AddressToResponse(&address)
 	}
 
 	return responses, nil
