@@ -18,19 +18,19 @@ func main() {
 	userConsumer := config.NewKafkaConsumer(viperConfig, logger)
 	userSignal := make(chan string)
 	userHandler := messaging.NewUserConsumer(logger)
-	go config.ConsumeTopic(userSignal, userConsumer, "users", logger, userHandler.Consume)
+	go messaging.ConsumeTopic(userSignal, userConsumer, "users", logger, userHandler.Consume)
 
 	logger.Info("setup contact consumer")
 	contactConsumer := config.NewKafkaConsumer(viperConfig, logger)
 	contactSignal := make(chan string)
 	contactHandler := messaging.NewContactConsumer(logger)
-	go config.ConsumeTopic(contactSignal, contactConsumer, "contacts", logger, contactHandler.Consume)
+	go messaging.ConsumeTopic(contactSignal, contactConsumer, "contacts", logger, contactHandler.Consume)
 
 	logger.Info("setup address consumer")
 	addressConsumer := config.NewKafkaConsumer(viperConfig, logger)
 	addressSignal := make(chan string)
 	addressHandler := messaging.NewAddressConsumer(logger)
-	go config.ConsumeTopic(addressSignal, addressConsumer, "addresses", logger, addressHandler.Consume)
+	go messaging.ConsumeTopic(addressSignal, addressConsumer, "addresses", logger, addressHandler.Consume)
 
 	logger.Info("Worker is running")
 
