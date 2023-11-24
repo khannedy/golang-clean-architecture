@@ -6,7 +6,7 @@ This is golang clean architecture template.
 
 ## Architecture
 
-![Clean Architecture](architecture.svg)
+![Clean Architecture](architecture.png)
 
 1. External system perform request (HTTP, gRPC, Messaging, etc)
 2. The Delivery creates various Model from request data
