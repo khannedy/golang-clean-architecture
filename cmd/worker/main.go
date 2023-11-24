@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"golang-clean-architecture/internal/config"
+	"golang-clean-architecture/internal/delivery/messaging"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,56 +12,42 @@ import (
 func main() {
 	viperConfig := config.NewViper()
 	logger := config.NewLogger(viperConfig)
+	logger.Info("Starting worker service")
 
-	consumerUser := config.NewKafkaConsumer(viperConfig, logger)
-	signalUser := make(chan string)
+	logger.Info("setup user consumer")
+	userConsumer := config.NewKafkaConsumer(viperConfig, logger)
+	userSignal := make(chan string)
+	userHandler := messaging.NewUserConsumer(logger)
+	go config.ConsumeTopic(userSignal, userConsumer, "users", logger, userHandler.Consume)
 
-	consumerContact := config.NewKafkaConsumer(viperConfig, logger)
-	signalContact := make(chan string)
+	logger.Info("setup contact consumer")
+	contactConsumer := config.NewKafkaConsumer(viperConfig, logger)
+	contactSignal := make(chan string)
+	contactHandler := messaging.NewContactConsumer(logger)
+	go config.ConsumeTopic(contactSignal, contactConsumer, "contacts", logger, contactHandler.Consume)
 
-	consumerAddress := config.NewKafkaConsumer(viperConfig, logger)
-	signalAddress := make(chan string)
+	logger.Info("setup address consumer")
+	addressConsumer := config.NewKafkaConsumer(viperConfig, logger)
+	addressSignal := make(chan string)
+	addressHandler := messaging.NewAddressConsumer(logger)
+	go config.ConsumeTopic(addressSignal, addressConsumer, "addresses", logger, addressHandler.Consume)
 
-	go config.ConsumeTopic(signalUser, consumerUser, "users", logger, func(message *kafka.Message) error {
-		event := string(message.Value)
-		logger.Infof("Received topic users with event: %s from partition %d", event, message.TopicPartition.Partition)
-		return nil
-	})
-
-	go config.ConsumeTopic(signalContact, consumerContact, "contacts", logger, func(message *kafka.Message) error {
-		event := string(message.Value)
-		logger.Infof("Received topic contacts with event: %s from partition %d", event, message.TopicPartition.Partition)
-		return nil
-	})
-
-	go config.ConsumeTopic(signalAddress, consumerAddress, "addresses", logger, func(message *kafka.Message) error {
-		event := string(message.Value)
-		logger.Infof("Received topic addresses with event: %s from partition %d", event, message.TopicPartition.Partition)
-		return nil
-	})
+	logger.Info("Worker is running")
 
 	terminateSignals := make(chan os.Signal, 1)
 	signal.Notify(terminateSignals, syscall.SIGINT, syscall.SIGKILL, syscall.SIGTERM)
 
 	stop := false
-
 	for !stop {
 		select {
 		case s := <-terminateSignals:
 			logger.Info("Got one of stop signals, shutting down server gracefully, SIGNAL NAME :", s)
-			signalUser <- "stop"
-			signalContact <- "stop"
-			signalAddress <- "stop"
+			userSignal <- "stop"
+			contactSignal <- "stop"
+			addressSignal <- "stop"
 			stop = true
 		}
 	}
 
 	time.Sleep(5 * time.Second) // wait for all consumers to finish processing
-
-	//	./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic users --group golang-clean-architecture
-	//$ ./bin/kafka-consumer-groups.sh --list --bootstrap-server localhost:9092
-	// ./bin/kafka-consumer-groups.sh --describe --group golang-clean-architecture --members --bootstrap-server localhost:9092
-	// ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic users --alter --partitions 3
-	// ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic contacts --alter --partitions 3
-	// ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic addresses --alter --partitions 3
 }
