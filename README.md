@@ -20,11 +20,16 @@ This is golang clean architecture template.
 10. The Gateway using Model data to construct request to external system 
 11. The Gateway perform request to external system (HTTP, gRPC, Messaging, etc)
 
-## Tech Stack / Framework
+## Tech Stack
+
+- Golang : https://github.com/golang/go
+- MySQL (Database) : https://github.com/mysql/mysql-server
+- Apache Kafka : https://github.com/apache/kafka
+
+## Framework & Library
 
 - GoFiber (HTTP Framework) : https://github.com/gofiber/fiber
 - GORM (ORM) : https://github.com/go-gorm/gorm
-- MySQL (Database) : https://github.com/mysql/mysql-server
 - Viper (Configuration) : https://github.com/spf13/viper
 - Golang Migrate (Database Migration) : https://github.com/golang-migrate/migrate
 - Go Playground Validator (Validation) : https://github.com/go-playground/validator
