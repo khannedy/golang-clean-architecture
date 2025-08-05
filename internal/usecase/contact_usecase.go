@@ -61,10 +61,15 @@ func (c *ContactUseCase) Create(ctx context.Context, request *model.CreateContac
 		return nil, fiber.ErrInternalServerError
 	}
 
-	event := converter.ContactToEvent(contact)
-	if err := c.ContactProducer.Send(event); err != nil {
-		c.Log.WithError(err).Error("error publishing contact")
-		return nil, fiber.ErrInternalServerError
+	if c.ContactProducer != nil {
+		event := converter.ContactToEvent(contact)
+		if err := c.ContactProducer.Send(event); err != nil {
+			c.Log.WithError(err).Error("error publishing contact created event")
+			return nil, fiber.ErrInternalServerError
+		}
+		c.Log.Info("Published contact created event")
+	} else {
+		c.Log.Info("Kafka producer is disabled, skipping contact created event")
 	}
 
 	return converter.ContactToResponse(contact), nil
@@ -100,10 +105,15 @@ func (c *ContactUseCase) Update(ctx context.Context, request *model.UpdateContac
 		return nil, fiber.ErrInternalServerError
 	}
 
-	event := converter.ContactToEvent(contact)
-	if err := c.ContactProducer.Send(event); err != nil {
-		c.Log.WithError(err).Error("error publishing contact")
-		return nil, fiber.ErrInternalServerError
+	if c.ContactProducer != nil {
+		event := converter.ContactToEvent(contact)
+		if err := c.ContactProducer.Send(event); err != nil {
+			c.Log.WithError(err).Error("error publishing contact updated event")
+			return nil, fiber.ErrInternalServerError
+		}
+		c.Log.Info("Published contact updated event")
+	} else {
+		c.Log.Info("Kafka producer is disabled, skipping contact updated event")
 	}
 
 	return converter.ContactToResponse(contact), nil

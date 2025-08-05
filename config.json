@@ -32,6 +32,9 @@
       "offset": {
         "reset": "earliest"
       }
+    },
+    "producer": {
+      "enabled": false
     }
   }
 }

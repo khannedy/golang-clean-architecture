@@ -31,9 +31,15 @@ func Bootstrap(config *BootstrapConfig) {
 	addressRepository := repository.NewAddressRepository(config.Log)
 
 	// setup producer
-	userProducer := messaging.NewUserProducer(config.Producer, config.Log)
-	contactProducer := messaging.NewContactProducer(config.Producer, config.Log)
-	addressProducer := messaging.NewAddressProducer(config.Producer, config.Log)
+	var userProducer *messaging.UserProducer
+	var contactProducer *messaging.ContactProducer
+	var addressProducer *messaging.AddressProducer
+
+	if config.Producer != nil {
+		userProducer = messaging.NewUserProducer(config.Producer, config.Log)
+		contactProducer = messaging.NewContactProducer(config.Producer, config.Log)
+		addressProducer = messaging.NewAddressProducer(config.Producer, config.Log)
+	}
 
 	// setup use cases
 	userUseCase := usecase.NewUserUseCase(config.DB, config.Log, config.Validate, userRepository, userProducer)

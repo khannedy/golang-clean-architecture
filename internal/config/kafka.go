@@ -21,6 +21,11 @@ func NewKafkaConsumer(config *viper.Viper, log *logrus.Logger) *kafka.Consumer {
 }
 
 func NewKafkaProducer(config *viper.Viper, log *logrus.Logger) *kafka.Producer {
+	if !config.GetBool("kafka.producer.enabled") {
+		log.Info("Kafka producer is disabled")
+		return nil
+	}
+
 	kafkaConfig := &kafka.ConfigMap{
 		"bootstrap.servers": config.GetString("kafka.bootstrap.servers"),
 	}
