@@ -19,6 +19,11 @@ func (p *Producer[T]) GetTopic() *string {
 }
 
 func (p *Producer[T]) Send(event T) error {
+	if p.Producer == nil {
+		p.Log.Warn("Kafka producer is disabled")
+		return nil
+	}
+
 	value, err := json.Marshal(event)
 	if err != nil {
 		p.Log.WithError(err).Error("failed to marshal event")
